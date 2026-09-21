@@ -1,0 +1,33 @@
+[tool.ruff]
+target-version = "py311"   # tomllib 需要 3.11+
+line-length = 88
+src = ["scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "PTH",    # flake8-use-pathlib
+    "RUF",    # ruff 自有规则
+    "PL",     # pylint
+    "EXE",    # flake8-executable
+]
+ignore = [
+    "PLR0912",  # 分支过多：构建脚本的分派逻辑本就如此
+    "PLR0915",  # 语句过多：同上
+    "PLR2004",  # 魔法值：规则解析里的字面量有注释说明
+    # 面向用户的输出是中文，全角标点是正确写法，不是「易混淆字符」
+    "RUF001",   # 字符串里的全角标点
+    "RUF002",   # docstring 里的全角标点
+    "RUF003",   # 注释里的全角标点
+]
+
+[tool.ruff.lint.per-file-ignores]
+# E741 `l` 作为行变量在解析循环里可读性更好
+"scripts/*.py" = ["E741"]

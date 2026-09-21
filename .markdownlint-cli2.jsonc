@@ -1,0 +1,17 @@
+{
+  "globs": ["**/*.md"],
+  "ignores": ["node_modules", ".work", "dist"],
+  "config": {
+    "default": true,
+
+    // 中文正文按语义断行，不做硬折行 —— CJK 字符宽度是西文两倍，
+    // 80 列限制会把一句话切碎，反而难读。表格与长 URL 同理。
+    "MD013": false,
+
+    // 行内 HTML：README 里不用，保持默认禁用
+    "MD033": { "allowed_elements": [] },
+
+    // 允许重复的标题名（不同章节下的「用法」「引用」等）
+    "MD024": { "siblings_only": true }
+  }
+}
