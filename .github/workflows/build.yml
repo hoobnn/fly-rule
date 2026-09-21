@@ -17,7 +17,9 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 钉死版本而非 ubuntu-latest：构建环境可复现，不会因 runner 镜像
+    # 自动升级而在某天突然变化。需要升级时显式改这里。
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
