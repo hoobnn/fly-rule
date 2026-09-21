@@ -1,0 +1,79 @@
+# 上游数据源。新增上游在这里加一个 [[sources]]，
+# 产物落到 release/<key>/<dataset>/。
+#
+# key       产物顶层目录名
+# repo      上游仓库
+# branch    分支
+#
+# 每个 [[sources.datasets]]：
+#   name    产物目录名
+#   path    上游仓库内路径
+#   kind    domain | ip，决定 Surge 侧怎么转
+#   mirror  原样镜像的扩展名
+
+[[sources]]
+key = "metacubex"
+repo = "https://github.com/MetaCubeX/meta-rules-dat.git"
+branch = "meta"
+
+[[sources.datasets]]
+name = "geosite"
+path = "geo/geosite"
+kind = "domain"
+mirror = ["mrs", "list", "yaml"]
+# 上游额外提供的 classical 变体（DOMAIN-SUFFIX,x 形式）
+extra_mirror = [{ path = "geo/geosite/classical", out = "mihomo-classical" }]
+
+[[sources.datasets]]
+name = "geoip"
+path = "geo/geoip"
+kind = "ip"
+mirror = ["mrs", "list", "yaml"]
+
+[[sources.datasets]]
+name = "geo-lite-geosite"
+path = "geo-lite/geosite"
+kind = "domain"
+mirror = ["mrs", "list", "yaml"]
+
+[[sources.datasets]]
+name = "geo-lite-geoip"
+path = "geo-lite/geoip"
+kind = "ip"
+mirror = ["mrs", "list", "yaml"]
+
+# 上游还有 asn/（16 万文件），体积过大且用途窄，不同步。
+
+# SukkaW 直接发布成品，Surge 与 mihomo 两侧都已是最终形态，
+# 无需转换，整目录原样镜像。产物仓库由作者官方维护。
+[[sources]]
+key = "sukkaw"
+repo = "https://github.com/SukkaLab/ruleset.skk.moe.git"
+branch = "master"
+
+[[sources.datasets]]
+name = "surge"
+path = "List"
+kind = "mirror"
+mirror_tree = true
+
+[[sources.datasets]]
+name = "mihomo"
+path = "Clash"
+kind = "mirror"
+mirror_tree = true
+
+# Aethersailor 的 rule/ 已是 Surge / mihomo 通用的 classical 语法
+# （域名与 IP 混在同一文件），同样无需转换。
+[[sources]]
+key = "aethersailor"
+repo = "https://github.com/Aethersailor/Custom_OpenClash_Rules.git"
+branch = "main"
+
+[[sources.datasets]]
+name = "rule"
+path = "rule"
+kind = "mirror"
+mirror_tree = true
+# archived 是作者已废弃的规则，不转发
+exclude = ["archived"]
