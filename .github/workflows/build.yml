@@ -78,12 +78,24 @@ jobs:
 
           git checkout --orphan release-tmp
           git reset --hard          # 清空索引与工作区（已跟踪文件）
-          git clean -fdx -e .git    # 清掉未跟踪文件与忽略项
+          # .work 里是上游的完整克隆，本身是 git 仓库。git clean 不加 -ff
+          # 不会删嵌套仓库，残留下来会被 git add 成 gitlink（模式 160000），
+          # 让 release 带上三个无法解析的子模块。这里先显式删掉。
+          rm -rf .work
+          git clean -fdx -e .git    # 清掉其余未跟踪文件与忽略项
 
           cp -R "$staging/." .
           rm -rf "$staging"
 
           git add -A
+
+          # 兜底：产物里不该有任何 gitlink（嵌套仓库残留）
+          if git ls-files -s | grep -q '^160000'; then
+            echo "产物含 gitlink，拒绝发布:" >&2
+            git ls-files -s | grep '^160000' >&2
+            exit 1
+          fi
+
           if git diff --cached --quiet; then
             echo "内容无变化，跳过发布"
             exit 0
