@@ -5,12 +5,19 @@ on:
     - cron: "30 20 * * *"   # 每日 UTC 20:30 = 北京时间 04:30
   push:
     branches: [main]
-    paths-ignore: ["**/*.md"]
+    # custom/ 与 custom.py 由 custom.yml 单独处理，不必为它们重建全部上游。
+    paths-ignore:
+      - "**/*.md"
+      - "custom/**"
+      - "scripts/custom.py"
+      - ".github/workflows/custom.yml"
   workflow_dispatch:
 
+# 与 custom.yml 共用一组：两者都推 release，并发会互相覆盖。
+# 这里不能 cancel-in-progress —— 取消正在发布的那个会让 release 半更新。
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: release-publish
+  cancel-in-progress: false
 
 permissions:
   contents: write

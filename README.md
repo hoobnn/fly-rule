@@ -36,20 +36,31 @@ DNS 解析，失去 DNS 污染保护。
 ## 自定义规则
 
 在 `custom/` 写一份 classical 源文件（域名与 IP 混写），构建时自动派生
-Surge 与 mihomo 三种 behavior 共四份。详见 [`custom/README.md`](custom/README.md)。
+Surge 与 mihomo 各三份（混写 / 仅域名 / 仅 IP），共六份。
+详见 [`custom/README.md`](custom/README.md)。
+
+改动 `custom/` 会触发单独的 CI（`custom.yml`），只重建自定义规则并就地替换
+`release` 里的 `custom/`，不拉上游，约数秒可用，不必等每日构建。
 
 ## 构建
 
 ```bash
 python3 scripts/build.py     # 同步所有上游（--only <key> 只构建一个，--offline 不联网）
 python3 scripts/custom.py    # 只重建自定义规则
-python3 scripts/verify.py    # 语法 / 重复 / 无损门禁
+python3 scripts/verify.py    # 语法 / 重复 / 无损门禁（--only-custom 只查 custom/）
 python3 scripts/guard.py --repo <user>/fly-rule
 pnpm lint                    # ruff + markdownlint
 ```
 
-全量约 34 秒，无第三方 Python 依赖。CI 每日构建后重建 `release` 分支 ——
-在那上面改东西会被覆盖，要改请改 `main`。
+全量约 34 秒，无第三方 Python 依赖。CI 有两个 workflow，都发布到 `release`：
+
+| workflow | 触发 | 做什么 |
+| --- | --- | --- |
+| `build.yml` | 每日 04:30 / 上游相关改动 | 重建全部产物，整棵 `release` 换新 |
+| `custom.yml` | `custom/` 或 `custom.py` 改动 | 只替换 `release` 里的 `custom/` |
+
+两者共用 `release-publish` 并发组，串行执行，避免同时推 `release` 互相覆盖。
+`release` 上改东西会被覆盖，要改请改 `main`。
 
 ## 门禁
 

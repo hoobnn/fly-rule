@@ -1,0 +1,81 @@
+name: Build custom rules
+
+# custom/ 改动后立刻发布，不等每日构建，也不拉三个上游。
+# 只替换 release 里的 custom/ 子树，其余目录保持原样。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "custom/**.list"
+      - "scripts/custom.py"
+      - ".github/workflows/custom.yml"
+  workflow_dispatch:
+
+# 与 build.yml 互斥：两者都改 release，并发推送会互相覆盖。
+# 组名写死而非用 github.workflow，好让两个 workflow 落进同一组。
+concurrency:
+  group: release-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  custom:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Lint Python (ruff)
+        uses: astral-sh/ruff-action@v4.1.0
+        with:
+          args: check --output-format=github
+
+      - name: Check Python formatting (ruff)
+        uses: astral-sh/ruff-action@v4.1.0
+        with:
+          args: format --check
+
+      # 只跑 custom.py，不碰 build.py：后者会清空 dist 并重建全部上游。
+      - name: Build custom rules
+        run: python scripts/custom.py
+
+      # verify.py 会遍历 sources.toml 校验上游产物，这里没有上游，
+      # 只挑出它的 custom 校验逻辑单独跑。
+      - name: Verify custom output
+        run: python scripts/verify.py --only-custom
+
+      - name: Publish custom/ to release branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          staging=$(mktemp -d)
+          cp -R dist/custom/. "$staging/"
+
+          # release 是孤儿分支，但这里必须在它已有内容上增量改，
+          # 否则会把三个上游的产物一并删掉。
+          git fetch origin release
+          git checkout -f -B release FETCH_HEAD
+
+          rm -rf custom
+          mkdir custom
+          cp -R "$staging/." custom/
+          rm -rf "$staging"
+
+          git add -A custom
+
+          if git diff --cached --quiet; then
+            echo "custom/ 无变化，跳过发布"
+            exit 0
+          fi
+
+          git commit -q -m "build(custom): $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push origin release

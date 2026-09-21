@@ -5,10 +5,14 @@
 1. Surge 产物语法合法、无重复
 2. Surge 产物条数与上游去重后逐个文件一致（转换无损）
 3. 镜像与上游逐字节一致（兜底副本不能漂移）
+
+自定义规则的校验独立成 check_custom()：custom.yml 只构建 custom/，
+产物里没有上游目录，用 --only-custom 跳过上面三项。
 """
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 import tomllib
@@ -57,11 +61,70 @@ def upstream_count(f: Path, kind: str) -> int:
     return len(seen)
 
 
+def check_custom(dist: Path) -> tuple[list[str], int]:
+    """自定义规则：Surge 侧是 classical，mihomo 侧是 payload YAML。"""
+    errors: list[str] = []
+    total_rules = 0
+
+    cdir = dist / "custom"
+    if not cdir.is_dir():
+        return errors, total_rules
+
+    for f in sorted((cdir / "surge").glob("*.conf")):
+        lines = rule_lines(f)
+        bad = [l for l in lines if not CLASSICAL_RULE.match(l)]
+        if bad:
+            errors.append(
+                f"custom/surge/{f.name} 语法非法 {len(bad)} 行，例: {bad[0]!r}"
+            )
+        if len(set(lines)) != len(lines):
+            errors.append(f"custom/surge/{f.name} 有重复行")
+        total_rules += len(lines)
+
+    for f in sorted((cdir / "mihomo").glob("*.yaml")):
+        lines = rule_lines(f)
+        if not lines or lines[0] != "payload:":
+            errors.append(f"custom/mihomo/{f.name} 缺少 payload: 头")
+            continue
+        bad = [l for l in lines[1:] if not PAYLOAD_ITEM.fullmatch(l)]
+        if bad:
+            errors.append(
+                f"custom/mihomo/{f.name} payload 项格式非法 "
+                f"{len(bad)} 行，例: {bad[0]!r}"
+            )
+
+    return errors, total_rules
+
+
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--only-custom",
+        action="store_true",
+        help="只校验 custom/，用于不含上游产物的构建",
+    )
+    a = ap.parse_args()
+
     dist = ROOT / "dist"
     if not dist.is_dir():
         print("dist/ 不存在", file=sys.stderr)
         return 1
+
+    if a.only_custom:
+        cdir = dist / "custom"
+        if not cdir.is_dir():
+            print("dist/custom/ 不存在", file=sys.stderr)
+            return 1
+        errors, total_rules = check_custom(dist)
+        if errors:
+            print("校验失败:", file=sys.stderr)
+            for e in errors[:40]:
+                print(f"  - {e}", file=sys.stderr)
+            return 1
+        surge = len(list((cdir / "surge").glob("*.conf")))
+        mihomo = len(list((cdir / "mihomo").glob("*.yaml")))
+        print(f"校验通过：自定义规则 {surge + mihomo} 个文件 / {total_rules} 条规则")
+        return 0
 
     cfg = tomllib.loads((ROOT / "sources.toml").read_text(encoding="utf-8"))
     errors: list[str] = []
@@ -162,31 +225,9 @@ def main() -> int:
                     elif f.read_bytes() != up.read_bytes():
                         errors.append(f"{label}/{mdir.name}/{f.name} 与上游不一致")
 
-    # 自定义规则：Surge 侧是 classical，mihomo 侧是 payload YAML
-    cdir = dist / "custom"
-    if cdir.is_dir():
-        for f in sorted((cdir / "surge").glob("*.conf")):
-            lines = rule_lines(f)
-            bad = [l for l in lines if not CLASSICAL_RULE.match(l)]
-            if bad:
-                errors.append(
-                    f"custom/surge/{f.name} 语法非法 {len(bad)} 行，例: {bad[0]!r}"
-                )
-            if len(set(lines)) != len(lines):
-                errors.append(f"custom/surge/{f.name} 有重复行")
-            total_rules += len(lines)
-
-        for f in sorted((cdir / "mihomo").glob("*.yaml")):
-            lines = rule_lines(f)
-            if not lines or lines[0] != "payload:":
-                errors.append(f"custom/mihomo/{f.name} 缺少 payload: 头")
-                continue
-            bad = [l for l in lines[1:] if not PAYLOAD_ITEM.fullmatch(l)]
-            if bad:
-                errors.append(
-                    f"custom/mihomo/{f.name} payload 项格式非法 "
-                    f"{len(bad)} 行，例: {bad[0]!r}"
-                )
+    custom_errors, custom_rules = check_custom(dist)
+    errors += custom_errors
+    total_rules += custom_rules
 
     if errors:
         print("校验失败:", file=sys.stderr)
