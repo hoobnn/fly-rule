@@ -1,0 +1,16 @@
+# 自定义规则示例。删掉这个文件，或按需增删。
+#
+# 用 classical 语法，域名与 IP 可以混写在同一个文件里。
+# 构建时会自动派生出 Surge 与 mihomo 三种格式，不用手工维护多份。
+
+# 域名类
+DOMAIN,foo.example.org
+DOMAIN-SUFFIX,example.com
+DOMAIN-KEYWORD,tracker
+
+# IP 类（会同时派生到 -ip.yaml）
+IP-CIDR,192.0.2.0/24
+IP-CIDR6,2001:db8::/32
+
+# 进程与端口只在 Surge 与 classical 侧出现
+PROCESS-NAME,Transmission
