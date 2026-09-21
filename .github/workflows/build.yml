@@ -1,0 +1,96 @@
+name: Build rules
+
+on:
+  schedule:
+    - cron: "30 20 * * *"   # 每日 UTC 20:30 = 北京时间 04:30
+  push:
+    branches: [main]
+    paths-ignore: ["**/*.md"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # tomllib 需要 3.11+，脚本无第三方依赖，不需要 pip install
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lint Python (ruff)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: check --output-format=github
+
+      - name: Check Python formatting (ruff)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: format --check
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint Markdown
+        run: pnpm exec markdownlint-cli2
+
+      - name: Build
+        run: python scripts/build.py
+
+      - name: Verify output
+        run: python scripts/verify.py
+
+      # 我们忠实同步上游，上游出问题会直接传导到产物。
+      # 与上次发布比对，异常缩水就拦下，不让坏数据进 release。
+      - name: Guard against upstream regression
+        run: python scripts/guard.py --repo "${{ github.repository }}"
+
+      # release 是孤儿分支，只存产物，每次发布都是一个新的根提交，
+      # 不与 main 共享历史、也不累积历史（同 MetaCubeX 的 meta、
+      # Loyalsoldier 的 release 分支做法）。
+      - name: Publish to release branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 多上游：提交信息里带上每个上游的 commit
+          revs=$(python -c "
+import json
+d = json.load(open('dist/build-report.json'))
+print(' '.join(f\"{s['key']}@{s['rev']}\" for s in d['sources']))")
+
+          # 把产物挪到仓库外，避免 clean 时被一并删除
+          staging=$(mktemp -d)
+          cp -R dist/. "$staging/"
+
+          git checkout --orphan release-tmp
+          git reset --hard          # 清空索引与工作区（已跟踪文件）
+          git clean -fdx -e .git    # 清掉未跟踪文件与忽略项
+
+          cp -R "$staging/." .
+          rm -rf "$staging"
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "内容无变化，跳过发布"
+            exit 0
+          fi
+          git commit -q -m "build: ${revs} ($(date -u +%Y-%m-%dT%H:%MZ))"
+          git branch -M release-tmp release
+          git push -f origin release
