@@ -1,6 +1,7 @@
 {
   "name": "fly-rule",
   "private": true,
+  "packageManager": "pnpm@11.10.0",
   "type": "commonjs",
   "scripts": {
     "prepare": "husky",
