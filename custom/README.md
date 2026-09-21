@@ -30,14 +30,29 @@ PROCESS-NAME,Transmission
 
 ## 派生出什么
 
-`my-proxy.list` 会生成四个文件：
+`my-proxy.list` 会生成六个文件，**两端都自动拆出域名与 IP 两份**：
 
 ```text
-custom/surge/my-proxy.conf           Surge RULE-SET，原样
+custom/surge/my-proxy.conf           Surge RULE-SET，域名与 IP 混写
+custom/surge/my-proxy-domain.conf    仅域名类
+custom/surge/my-proxy-ip.conf        仅 IP 类
 custom/mihomo/my-proxy.yaml          behavior: classical，全部规则
 custom/mihomo/my-proxy-domain.yaml   behavior: domain，仅域名
 custom/mihomo/my-proxy-ip.yaml       behavior: ipcidr，仅 IP
 ```
+
+拆分的理由两端不同：
+
+- **mihomo**：`domain` / `ipcidr` 是官方优化过的 behavior，匹配比 `classical` 快。
+- **Surge**：为了满足顺序与 `no-resolve` 两个约束。域名规则必须全部排在 IP 规则
+  之前，且 IP 规则要带 `no-resolve`。混写文件只能整体引用一次，没法同时满足这
+  两点 —— 拆开后 `-domain` 放域名段、`-ip` 放 IP 段并加 `no-resolve`。
+
+只有域名、或只有 IP 的规则集，直接用混写的那份更省事（只会生成用得上的文件，
+纯域名规则集不会产出空的 `-ip`）。
+
+`PROCESS-NAME` 这类既不是域名也不是 IP，归入 `-domain`：它们不参与 IP 匹配，
+放在域名段不会触发 DNS 解析。
 
 域名类会按 mihomo 的写法转换：
 
@@ -52,7 +67,13 @@ custom/mihomo/my-proxy-ip.yaml       behavior: ipcidr，仅 IP
 ## 怎么引用
 
 ```ini
-# Surge
+# Surge —— 域名与 IP 分开引用（推荐：满足顺序与 no-resolve 约束）
+# 放在域名规则区
+RULE-SET,https://raw.githubusercontent.com/<user>/fly-rule/release/custom/surge/my-proxy-domain.conf,🚀 代理
+# 放在所有域名规则之后的 IP 规则区
+RULE-SET,https://raw.githubusercontent.com/<user>/fly-rule/release/custom/surge/my-proxy-ip.conf,🚀 代理,no-resolve
+
+# 或者用混写的那份（只有域名或只有 IP 时更省事）
 RULE-SET,https://raw.githubusercontent.com/<user>/fly-rule/release/custom/surge/my-proxy.conf,🚀 代理
 ```
 
@@ -82,7 +103,7 @@ rule-providers:
 
 `behavior` 必须与文件对应，写错 mihomo 会加载失败。
 
-**顺序**：`-ip.yaml` 属于 IP 类规则，必须排在所有域名类规则之后，否则会在匹配时触发 DNS 解析。
+**顺序**：`-ip.yaml` / `-ip.conf` 属于 IP 类规则，必须排在所有域名类规则之后，否则会在匹配时触发 DNS 解析。Surge 侧还要在行尾加 `no-resolve`。
 
 ## 为什么和同步产物分开
 

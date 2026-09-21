@@ -9,13 +9,21 @@
 
 派生产物：
 
-    custom/surge/<name>.conf           Surge RULE-SET，原样
+    custom/surge/<name>.conf           Surge RULE-SET，域名与 IP 混写（原样）
+    custom/surge/<name>-domain.conf    仅域名类
+    custom/surge/<name>-ip.conf        仅 IP 类
     custom/mihomo/<name>.yaml          behavior: classical
     custom/mihomo/<name>-domain.yaml   behavior: domain（仅域名，+.x 形式）
     custom/mihomo/<name>-ip.yaml       behavior: ipcidr（仅 IP）
 
-domain / ip 两种是 mihomo 官方优化过的 behavior，匹配更快；
-classical 通用但没有优化。按需引用。
+两端都拆出 domain / ip 两份，原因不同：
+
+* mihomo 的 domain / ipcidr 是官方优化过的 behavior，匹配比 classical 快。
+* Surge 侧拆分是为了顺序与 no-resolve —— 域名规则必须全部排在 IP 规则之前，
+  且 IP 规则要带 no-resolve 才不会触发 DNS 解析。混写文件只能整体引用一次，
+  没法同时满足这两点；拆开后 -domain 放域名段、-ip 放 IP 段并加 no-resolve。
+
+混写的 <name>.conf 仍然保留：只有域名或只有 IP 的规则集，用它更省事。
 """
 
 from __future__ import annotations
@@ -121,11 +129,31 @@ def build(src_dir: Path, out_dir: Path) -> dict:
             f"# 规则数: {len(rules)}\n"
         )
 
-        # Surge：classical 原样
+        # Surge：classical 原样（域名与 IP 混写）
         (surge_dir / f"{name}.conf").write_text(
             head + "\n".join(f"{k},{v}" for k, v in rules) + "\n",
             encoding="utf-8",
         )
+
+        # Surge：按域名 / IP 拆两份，便于分别放进域名段与 IP 段。
+        # OTHER_TYPES（PROCESS-NAME 等）既非域名也非 IP，归入 -domain：
+        # 它们不参与 IP 匹配，放在域名段不会触发 DNS 解析。
+        surge_dom = [(k, v) for k, v in rules if k in DOMAIN_TYPES or k in OTHER_TYPES]
+        surge_ip = [(k, v) for k, v in rules if k in IP_TYPES]
+        for suffix, subset in (("domain", surge_dom), ("ip", surge_ip)):
+            if not subset:
+                continue
+            sub_head = (
+                f"# {name}-{suffix}\n"
+                f"# 由 fly-rule 自 custom/{f.name} 生成，请勿手工编辑\n"
+                f"# 规则数: {len(subset)}\n"
+            )
+            if suffix == "ip":
+                sub_head += "# 引用时需加 no-resolve，且须排在所有域名规则之后\n"
+            (surge_dir / f"{name}-{suffix}.conf").write_text(
+                sub_head + "\n".join(f"{k},{v}" for k, v in subset) + "\n",
+                encoding="utf-8",
+            )
 
         # mihomo classical
         (mihomo_dir / f"{name}.yaml").write_text(
