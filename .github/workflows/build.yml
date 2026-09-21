@@ -19,25 +19,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # tomllib 需要 3.11+，脚本无第三方依赖，不需要 pip install
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
       - name: Lint Python (ruff)
-        uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@v4
         with:
           args: check --output-format=github
 
       - name: Check Python formatting (ruff)
-        uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@v4
         with:
           args: format --check
 
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: pnpm
