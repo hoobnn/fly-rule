@@ -26,13 +26,15 @@ jobs:
         with:
           python-version: "3.12"
 
+      # ruff-action 自 v4 起是 immutable release，只发精确版本，
+      # 没有 v4 这样的浮动大版本标签，升级时需要手动改这里。
       - name: Lint Python (ruff)
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: check --output-format=github
 
       - name: Check Python formatting (ruff)
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: format --check
 
