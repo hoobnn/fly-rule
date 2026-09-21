@@ -70,10 +70,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # 多上游：提交信息里带上每个上游的 commit
-          revs=$(python -c "
-import json
-d = json.load(open('dist/build-report.json'))
-print(' '.join(f\"{s['key']}@{s['rev']}\" for s in d['sources']))")
+          revs=$(python scripts/revs.py dist/build-report.json)
 
           # 把产物挪到仓库外，避免 clean 时被一并删除
           staging=$(mktemp -d)
