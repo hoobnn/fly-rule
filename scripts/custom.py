@@ -24,6 +24,10 @@
   没法同时满足这两点；拆开后 -domain 放域名段、-ip 放 IP 段并加 no-resolve。
 
 混写的 <name>.conf 仍然保留：只有域名或只有 IP 的规则集，用它更省事。
+
+每份产物的头部都写明自己的规则数，mihomo 侧还写明该用哪个 behavior —— 三份
+产物文件名相近而内容形态不同，配错 behavior 时 mihomo 会逐行解析失败、静默
+丢弃整表且不中断加载，光看日志以外很难发现。
 """
 
 from __future__ import annotations
@@ -96,6 +100,23 @@ def to_domain_value(kind: str, value: str) -> str | None:
     return None
 
 
+def make_head(src_name: str, title: str, count: int, behavior: str = "") -> str:
+    """产物头部。
+
+    规则数按各自实际条数写，不能用源文件总数 —— 拆分产物只含子集。
+    mihomo 侧标注 behavior：三份产物内容形态不同但文件名相近，引用方光看
+    文件无从判断该配哪个，配错会整表静默丢弃且不报错。
+    """
+    h = (
+        f"# {title}\n"
+        f"# 由 fly-rule 自 custom/{src_name} 生成，请勿手工编辑\n"
+        f"# 规则数: {count}\n"
+    )
+    if behavior:
+        h += f"# mihomo 引用时须写 behavior: {behavior}，写错会整表静默丢弃\n"
+    return h
+
+
 def yaml_payload(items: list[str], header: str) -> str:
     body = "\n".join(f"  - '{i}'" for i in items)
     return f"{header}payload:\n{body}\n"
@@ -123,15 +144,11 @@ def build(src_dir: Path, out_dir: Path) -> dict:
         stats["files"] += 1
         stats["rules"] += len(rules)
 
-        head = (
-            f"# {name}\n"
-            f"# 由 fly-rule 自 custom/{f.name} 生成，请勿手工编辑\n"
-            f"# 规则数: {len(rules)}\n"
-        )
-
         # Surge：classical 原样（域名与 IP 混写）
         (surge_dir / f"{name}.conf").write_text(
-            head + "\n".join(f"{k},{v}" for k, v in rules) + "\n",
+            make_head(f.name, name, len(rules))
+            + "\n".join(f"{k},{v}" for k, v in rules)
+            + "\n",
             encoding="utf-8",
         )
 
@@ -143,11 +160,7 @@ def build(src_dir: Path, out_dir: Path) -> dict:
         for suffix, subset in (("domain", surge_dom), ("ip", surge_ip)):
             if not subset:
                 continue
-            sub_head = (
-                f"# {name}-{suffix}\n"
-                f"# 由 fly-rule 自 custom/{f.name} 生成，请勿手工编辑\n"
-                f"# 规则数: {len(subset)}\n"
-            )
+            sub_head = make_head(f.name, f"{name}-{suffix}", len(subset))
             if suffix == "ip":
                 sub_head += "# 引用时需加 no-resolve，且须排在所有域名规则之后\n"
             (surge_dir / f"{name}-{suffix}.conf").write_text(
@@ -157,7 +170,10 @@ def build(src_dir: Path, out_dir: Path) -> dict:
 
         # mihomo classical
         (mihomo_dir / f"{name}.yaml").write_text(
-            yaml_payload([f"{k},{v}" for k, v in rules], head),
+            yaml_payload(
+                [f"{k},{v}" for k, v in rules],
+                make_head(f.name, name, len(rules), "classical"),
+            ),
             encoding="utf-8",
         )
 
@@ -165,14 +181,18 @@ def build(src_dir: Path, out_dir: Path) -> dict:
         doms = [d for k, v in rules if (d := to_domain_value(k, v)) is not None]
         if doms:
             (mihomo_dir / f"{name}-domain.yaml").write_text(
-                yaml_payload(doms, head), encoding="utf-8"
+                yaml_payload(
+                    doms, make_head(f.name, f"{name}-domain", len(doms), "domain")
+                ),
+                encoding="utf-8",
             )
 
         # mihomo ipcidr
         ips = [v for k, v in rules if k in IP_TYPES]
         if ips:
             (mihomo_dir / f"{name}-ip.yaml").write_text(
-                yaml_payload(ips, head), encoding="utf-8"
+                yaml_payload(ips, make_head(f.name, f"{name}-ip", len(ips), "ipcidr")),
+                encoding="utf-8",
             )
 
     return stats

@@ -8,6 +8,8 @@
 
 自定义规则的校验独立成 check_custom()：custom.yml 只构建 custom/，
 产物里没有上游目录，用 --only-custom 跳过上面三项。
+另外校验 mihomo 产物的 payload 形态与文件名隐含的 behavior 相符 ——
+behavior 配错时 mihomo 只会静默丢表，不报错，事后很难发现。
 """
 
 from __future__ import annotations
@@ -30,6 +32,11 @@ CLASSICAL_RULE = re.compile(
     r"|PROCESS-NAME|DST-PORT|SRC-PORT|SRC-IP-CIDR),.+$"
 )
 PAYLOAD_ITEM = re.compile(r"  - '[^']+'")
+
+# mihomo 三种 behavior 各自的 payload 形态。配错 behavior 时 mihomo 会逐行
+# 解析失败、静默丢弃整表且不中断加载，所以这里按文件名后缀反查形态是否相符。
+PAYLOAD_CLASSICAL = re.compile(r"^[A-Z][A-Z0-9-]*,")  # RULE-TYPE,value
+PAYLOAD_IPCIDR = re.compile(r"^[0-9A-Fa-f.:]+/\d{1,3}$")  # 裸 CIDR
 
 
 def rule_lines(path: Path) -> list[str]:
@@ -92,8 +99,47 @@ def check_custom(dist: Path) -> tuple[list[str], int]:
                 f"custom/mihomo/{f.name} payload 项格式非法 "
                 f"{len(bad)} 行，例: {bad[0]!r}"
             )
+            continue
+
+        errors += check_behavior(f, lines[1:])
 
     return errors, total_rules
+
+
+def check_behavior(f: Path, items: list[str]) -> list[str]:
+    """payload 形态必须与文件名隐含的 behavior 一致。
+
+    三份产物文件名相近、内容形态不同，配错 behavior 不会报错只会静默丢表，
+    所以在构建期就把形态钉死：-ip 必须是裸 CIDR，-domain 不能带规则类型前缀，
+    不带后缀的 classical 必须每行都有前缀。
+    """
+    values = [i.strip()[3:].strip("'") for i in items]
+    if not values:
+        return []
+
+    stem = f.stem
+    if stem.endswith("-ip"):
+        behavior = "ipcidr"
+        bad = [v for v in values if not PAYLOAD_IPCIDR.fullmatch(v)]
+    elif stem.endswith("-domain"):
+        behavior = "domain"
+        bad = [v for v in values if PAYLOAD_CLASSICAL.match(v)]
+    else:
+        behavior = "classical"
+        bad = [v for v in values if not PAYLOAD_CLASSICAL.match(v)]
+
+    if bad:
+        return [
+            f"custom/mihomo/{f.name} 内容形态与 behavior: {behavior} 不符 "
+            f"{len(bad)} 项，例: {bad[0]!r}"
+        ]
+
+    # 头部的 behavior 标注也要与文件名一致，避免注释与内容脱节
+    head = f.read_text(encoding="utf-8")
+    marker = f"behavior: {behavior}"
+    if marker not in head:
+        return [f"custom/mihomo/{f.name} 头部缺少 `{marker}` 标注"]
+    return []
 
 
 def main() -> int:
