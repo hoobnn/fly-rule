@@ -36,8 +36,14 @@ DNS 解析，失去 DNS 污染保护。
 ## 自定义规则
 
 在 `custom/` 写一份 classical 源文件（域名与 IP 混写），构建时自动派生
-Surge 与 mihomo 各三份（混写 / 仅域名 / 仅 IP），共六份。
+Surge 三份（混写 / 仅域名 / 仅 IP）与 mihomo 五份（classical 一份，domain 与
+ipcidr 各含 `.yaml` 和预编译 `.mrs`），共八份。
 详见 [`custom/README.md`](custom/README.md)。
+
+mihomo 侧推荐用 `.mrs`：预编译、加载快、文件小。**mrs 只支持 `domain` 与
+`ipcidr`，不支持 `classical`**（后者含 `PROCESS-NAME` 这类无法编译的规则），
+所以全部引用 mrs 也就意味着配置里不会出现 classical。代价是 `DOMAIN-KEYWORD`
+在 mihomo 的 domain 侧无法表达，会被排除出 `-domain` 产物。
 
 改动 `custom/` 会触发单独的 CI（`custom.yml`），只重建自定义规则并就地替换
 `release` 里的 `custom/`，不拉上游，约数秒可用，不必等每日构建。
@@ -47,17 +53,21 @@ Surge 与 mihomo 各三份（混写 / 仅域名 / 仅 IP），共六份。
 ```bash
 python3 scripts/build.py     # 同步所有上游（--only <key> 只构建一个，--offline 不联网）
 python3 scripts/custom.py    # 只重建自定义规则
+python3 scripts/mrs.py       # 把 custom 的 domain/ipcidr 产物编译成 mrs（需 mihomo）
 python3 scripts/verify.py    # 语法 / 重复 / 无损门禁（--only-custom 只查 custom/）
 python3 scripts/guard.py --repo <user>/fly-rule
 pnpm lint                    # ruff + markdownlint
 ```
 
-全量约 34 秒，无第三方 Python 依赖。CI 有两个 workflow，都发布到 `release`：
+全量约 34 秒，无第三方 Python 依赖（mrs 需要 `mihomo` 可执行文件，CI 里按钉死
+的版本与校验和下载；本地没装时 `mrs.py` 跳过，不阻塞其余构建）。
+
+CI 有两个 workflow，都发布到 `release`：
 
 | workflow | 触发 | 做什么 |
 | --- | --- | --- |
 | `build.yml` | 每日 04:30 / 上游相关改动 | 重建全部产物，整棵 `release` 换新 |
-| `custom.yml` | `custom/` 或 `custom.py` 改动 | 只替换 `release` 里的 `custom/` |
+| `custom.yml` | `custom/`、`custom.py` 或 `mrs.py` 改动 | 只替换 `release` 里的 `custom/` |
 
 两者共用 `release-publish` 并发组，串行执行，避免同时推 `release` 互相覆盖。
 `release` 上改东西会被覆盖，要改请改 `main`。
