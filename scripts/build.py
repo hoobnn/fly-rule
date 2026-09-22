@@ -340,6 +340,13 @@ def main() -> int:
     )
     if custom_count:
         print(f"自定义规则 {custom_count} 个 / {custom_stats['rules']} 条")
+        # mihomo 的 domain behavior 表达不了的规则（KEYWORD 等）已被排除，
+        # 在 Surge 与 classical 侧仍生效。不是错误，但要让人看见。
+        if custom_stats["domain_skipped"]:
+            print(
+                f"  其中 {len(custom_stats['domain_skipped'])} 条不进 "
+                "mihomo -domain 产物（仅 Surge 与 classical 生效）"
+            )
     return 0
 
 
