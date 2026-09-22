@@ -10,6 +10,8 @@
 产物里没有上游目录，用 --only-custom 跳过上面三项。
 另外校验 mihomo 产物的 payload 形态与文件名隐含的 behavior 相符 ——
 behavior 配错时 mihomo 只会静默丢表，不报错，事后很难发现。
+mrs 产物同时校验存在性与魔数：引用方按 format: mrs 拉到 404 或坏文件时，
+mihomo 会整表加载失败。
 """
 
 from __future__ import annotations
@@ -68,8 +70,12 @@ def upstream_count(f: Path, kind: str) -> int:
     return len(seen)
 
 
-def check_custom(dist: Path) -> tuple[list[str], int]:
-    """自定义规则：Surge 侧是 classical，mihomo 侧是 payload YAML。"""
+def check_custom(dist: Path, require_mrs: bool = False) -> tuple[list[str], int]:
+    """自定义规则：Surge 侧是 classical，mihomo 侧是 payload YAML。
+
+    require_mrs 为真时，缺 mrs 算错误。本地开发未必装了 mihomo，默认只在
+    mrs 存在时校验它合法；CI 用 --require-mrs 要求必须齐全。
+    """
     errors: list[str] = []
     total_rules = 0
 
@@ -103,7 +109,50 @@ def check_custom(dist: Path) -> tuple[list[str], int]:
 
         errors += check_behavior(f, lines[1:])
 
+    errors += check_mrs(cdir / "mihomo", require_mrs)
+
     return errors, total_rules
+
+
+# mrs 的 zstd 帧头。mihomo 写 mrs 时整体走 zstd，magic 在解压后才是 MRS，
+# 所以这里只能校验外层 zstd 魔数，内容一致性由 mrs.py 编译期保证。
+ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+
+
+def check_mrs(mihomo_dir: Path, require: bool = False) -> list[str]:
+    """mrs 产物：存在的必须合法；require 时还必须齐全。
+
+    只有 -domain / -ip 能编译成 mrs（classical 不支持，见 scripts/mrs.py）。
+    缺失说明编译那步没跑或悄悄失败了，而引用方按 format: mrs 拉到 404 时
+    mihomo 会整表加载失败 —— 所以 CI 里必须拦住。本地没装 mihomo 时 mrs.py
+    会跳过生成，这时不该让 verify 失败，故缺失与否由 require 决定。
+    """
+    errors: list[str] = []
+    if not mihomo_dir.is_dir():
+        return errors
+
+    for y in sorted(mihomo_dir.glob("*.yaml")):
+        stem = y.stem
+        if not (stem.endswith("-domain") or stem.endswith("-ip")):
+            # classical：不该有 mrs
+            if y.with_suffix(".mrs").exists():
+                errors.append(
+                    f"custom/mihomo/{stem}.mrs 不该存在（classical 无法编译成 mrs）"
+                )
+            continue
+
+        m = y.with_suffix(".mrs")
+        if not m.is_file():
+            if require:
+                errors.append(f"custom/mihomo/{stem}.mrs 缺失（yaml 有但 mrs 没生成）")
+            continue
+        if m.stat().st_size == 0:
+            errors.append(f"custom/mihomo/{stem}.mrs 为空")
+            continue
+        if m.read_bytes()[:4] != ZSTD_MAGIC:
+            errors.append(f"custom/mihomo/{stem}.mrs 不是合法 mrs（zstd 魔数不符）")
+
+    return errors
 
 
 def check_behavior(f: Path, items: list[str]) -> list[str]:
@@ -149,6 +198,11 @@ def main() -> int:
         action="store_true",
         help="只校验 custom/，用于不含上游产物的构建",
     )
+    ap.add_argument(
+        "--require-mrs",
+        action="store_true",
+        help="要求 mrs 产物齐全（CI 用；本地无 mihomo 时不要加）",
+    )
     a = ap.parse_args()
 
     dist = ROOT / "dist"
@@ -161,7 +215,7 @@ def main() -> int:
         if not cdir.is_dir():
             print("dist/custom/ 不存在", file=sys.stderr)
             return 1
-        errors, total_rules = check_custom(dist)
+        errors, total_rules = check_custom(dist, a.require_mrs)
         if errors:
             print("校验失败:", file=sys.stderr)
             for e in errors[:40]:
@@ -169,7 +223,11 @@ def main() -> int:
             return 1
         surge = len(list((cdir / "surge").glob("*.conf")))
         mihomo = len(list((cdir / "mihomo").glob("*.yaml")))
-        print(f"校验通过：自定义规则 {surge + mihomo} 个文件 / {total_rules} 条规则")
+        mrs = len(list((cdir / "mihomo").glob("*.mrs")))
+        print(
+            f"校验通过：自定义规则 {surge + mihomo + mrs} 个文件 "
+            f"/ {total_rules} 条规则（含 {mrs} 个 mrs）"
+        )
         return 0
 
     cfg = tomllib.loads((ROOT / "sources.toml").read_text(encoding="utf-8"))
@@ -271,7 +329,7 @@ def main() -> int:
                     elif f.read_bytes() != up.read_bytes():
                         errors.append(f"{label}/{mdir.name}/{f.name} 与上游不一致")
 
-    custom_errors, custom_rules = check_custom(dist)
+    custom_errors, custom_rules = check_custom(dist, a.require_mrs)
     errors += custom_errors
     total_rules += custom_rules
 

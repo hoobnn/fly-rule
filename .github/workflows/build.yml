@@ -10,6 +10,7 @@ on:
       - "**/*.md"
       - "custom/**"
       - "scripts/custom.py"
+      - "scripts/mrs.py"
       - ".github/workflows/custom.yml"
   workflow_dispatch:
 
@@ -58,11 +59,32 @@ jobs:
       - name: Lint Markdown
         run: pnpm exec markdownlint-cli2
 
+      # mrs 是 mihomo 自己的预编译二进制格式，只能由 mihomo convert-ruleset
+      # 生成，没有纯 Python 实现。版本钉死，好让产物可复现；升级时改这里。
+      - name: Install mihomo (for mrs)
+        env:
+          MIHOMO_VERSION: v1.19.31
+          # 校验和与版本一起钉死：mrs 是二进制产物，二进制被动过或下载损坏时
+          # 编译出的 mrs 也是坏的，而坏 mrs 要到客户端加载才会暴露。
+          MIHOMO_SHA256: d5e74bbddbdfff49a1aef7775bf5911da59f0d7196ed509a0ac914b3653dd5f1
+        run: |
+          set -euo pipefail
+          url="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-linux-amd64-${MIHOMO_VERSION}.gz"
+          curl -fsSL "$url" -o /tmp/mihomo.gz
+          echo "${MIHOMO_SHA256}  /tmp/mihomo.gz" | sha256sum -c -
+          gunzip -f /tmp/mihomo.gz
+          install -m 0755 /tmp/mihomo /usr/local/bin/mihomo
+          mihomo -v | head -1
+
       - name: Build
         run: python scripts/build.py
 
+      # build.py 内部也会重建 custom/，所以这里同样要编译 mrs。
+      - name: Compile mrs
+        run: python scripts/mrs.py --require
+
       - name: Verify output
-        run: python scripts/verify.py
+        run: python scripts/verify.py --require-mrs
 
       # 我们忠实同步上游，上游出问题会直接传导到产物。
       # 与上次发布比对，异常缩水就拦下，不让坏数据进 release。

@@ -1,0 +1,4 @@
+# mrs 是 mihomo 的预编译二进制规则集。git 的自动检测通常能认出它是二进制，
+# 但这里显式声明，免得哪天 runner 上 core.autocrlf / text=auto 生效时对它做
+# 行尾转换 —— 转换后的 mrs 仍能提交和下载，要到客户端加载时才会整表失败。
+*.mrs binary
