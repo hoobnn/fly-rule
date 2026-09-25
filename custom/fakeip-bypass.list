@@ -1,0 +1,25 @@
+# 需要真实 IP 的域名（fake-ip 排除）
+#
+# 用于 mihomo 的 dns.fake-ip-filter / Surge 的 always-real-ip：这些域名拿到
+# fake-ip 会出问题（联网检测误报、NAT 打洞失败、VoWiFi 连不上等）。
+# 通用的 STUN / NTP 由 MetaCubeX 的 category-stun、category-ntp 覆盖，
+# 这里只补它们没收录的。
+
+# Windows 联网检测（NCSI），拿到 fake-ip 会误报「无 Internet」
+DOMAIN-SUFFIX,msftconnecttest.com
+DOMAIN-SUFFIX,msftncsi.com
+
+# Wi-Fi 通话（VoWiFi）：运营商 ePDG 接入点
+DOMAIN-SUFFIX,pub.3gppnetwork.org
+
+# 主机联机 NAT 检测
+DOMAIN-SUFFIX,srv.nintendo.net
+DOMAIN,ctest.cdn.nintendo.net
+DOMAIN-SUFFIX,stun.playstation.net
+DOMAIN,xnotify.xboxlive.com
+DOMAIN-WILDCARD,xbox.*.microsoft.com
+DOMAIN-WILDCARD,xbox.*.*.microsoft.com
+
+# 未收录进 category-stun 的自建 / 小众 STUN 服务器
+DOMAIN-WILDCARD,stun.*.*
+DOMAIN-WILDCARD,stun.*.*.*
