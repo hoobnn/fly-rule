@@ -55,8 +55,8 @@ def main() -> int:
     ap.add_argument(
         "--max-drop",
         type=float,
-        default=0.10,
-        help="单类别 / 总量允许的最大缩水比例，默认 10%%",
+        default=0.50,
+        help="单类别 / 总量允许的最大缩水比例，默认 50%%",
     )
     ap.add_argument(
         "--min-rules",
