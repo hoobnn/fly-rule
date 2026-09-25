@@ -57,7 +57,7 @@ jobs:
           echo "${MIHOMO_SHA256}  /tmp/mihomo.gz" | sha256sum -c -
           gunzip -f /tmp/mihomo.gz
           install -m 0755 /tmp/mihomo /usr/local/bin/mihomo
-          mihomo -v | head -1
+          mihomo -v
 
       # 只跑 custom.py，不碰 build.py：后者会清空 dist 并重建全部上游。
       - name: Build custom rules

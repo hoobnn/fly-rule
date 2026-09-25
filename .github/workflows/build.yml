@@ -74,7 +74,7 @@ jobs:
           echo "${MIHOMO_SHA256}  /tmp/mihomo.gz" | sha256sum -c -
           gunzip -f /tmp/mihomo.gz
           install -m 0755 /tmp/mihomo /usr/local/bin/mihomo
-          mihomo -v | head -1
+          mihomo -v
 
       - name: Build
         run: python scripts/build.py
