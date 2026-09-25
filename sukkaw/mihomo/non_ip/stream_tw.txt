@@ -1,0 +1,55 @@
+#########################################
+# Sukka's Ruleset - Stream Services: Taiwan
+# Last Updated: 2026-08-05T12:33:03.808Z
+# Size: 35
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# - KKTV
+# - LiTV
+# - 4gtv
+# - Line TV
+# - HBO Asia
+# - Bahamut
+# - Friday TW
+# - MangaFox
+#
+# $content-hash-v1$:9_5bfn4YiVURRQfphz7EE-opTgezICjae4HCAoBcWww$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,4gtv.tv
+DOMAIN-SUFFIX,kktv.me
+DOMAIN-SUFFIX,kk.stream
+DOMAIN-SUFFIX,linetv.tw
+DOMAIN-SUFFIX,fanfox.net
+DOMAIN-SUFFIX,hboasia.com
+DOMAIN-SUFFIX,kktv.com.tw
+DOMAIN-SUFFIX,mangafox.me
+DOMAIN-SUFFIX,viblast.com
+DOMAIN,www.litv.tv
+DOMAIN-SUFFIX,hbogoasia.hk
+DOMAIN-SUFFIX,hbogoasia.id
+DOMAIN-SUFFIX,hbogoasia.ph
+DOMAIN-SUFFIX,hbogoasia.sg
+DOMAIN-SUFFIX,hbogoasia.tw
+DOMAIN,cdi.ofiii.com
+DOMAIN-SUFFIX,hbogoasia.com
+DOMAIN-SUFFIX,bahamut.com.tw
+DOMAIN,video.friday.tw
+DOMAIN-SUFFIX,ani.gamer.com.tw
+DOMAIN-SUFFIX,api.gamer.com.tw
+DOMAIN,ana.video.friday.tw
+DOMAIN,hbolb.onwardsmg.com
+DOMAIN,players.brightcove.net
+DOMAIN,gamer-cds.cdn.hinet.net
+DOMAIN,gamer2-cds.cdn.hinet.net
+DOMAIN,manifest.prod.boltdns.net
+DOMAIN,hbounify-prod.evergent.com
+DOMAIN,ntdfreepc-tgc.cdn.hinet.net
+DOMAIN,d3c7rimkq79yfu.cloudfront.net
+DOMAIN,4gtvfreepcvod-cds.cdn.hinet.net
+DOMAIN,litvfreemobile-hichannel.cdn.hinet.net
+DOMAIN,44wilhpljf.execute-api.ap-southeast-1.amazonaws.com
+PROCESS-NAME,com.linecorp.linetv
+################## EOF ##################

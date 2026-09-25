@@ -1,0 +1,58 @@
+#########################################
+# Sukka's Ruleset - Reject No Drop
+# Last Updated: 2026-08-30T07:31:52.265Z
+# Size: 45
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file This file contains rules for domain should be used with REJECT-NO-DROP policy.
+#
+# $content-hash-v1$:BY-ELU5XA8bpQYNv68W30a6ufn7YTY05Fn4xpxpJA44$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,bvmlt.top
+DOMAIN-SUFFIX,gjfzpt.cn
+DOMAIN-SUFFIX,p2cdn.com
+DOMAIN-SUFFIX,uhabo.com
+DOMAIN-SUFFIX,xycdn.com
+DOMAIN-SUFFIX,yfcdn.net
+DOMAIN-SUFFIX,yfp2p.net
+DOMAIN-SUFFIX,bsccdn.net
+DOMAIN-SUFFIX,p2p.qq.com
+DOMAIN-SUFFIX,ppio.cloud
+DOMAIN-SUFFIX,szbdyd.com
+DOMAIN-SUFFIX,saxysec.com
+DOMAIN-SUFFIX,yfcloud.com
+DOMAIN-SUFFIX,kuiniuca.com
+DOMAIN-SUFFIX,p2p.huya.com
+DOMAIN-SUFFIX,pkoplink.com
+DOMAIN-SUFFIX,cdnnodedns.cn
+DOMAIN-SUFFIX,p2ptun.qq.com
+DOMAIN-SUFFIX,tianwenca.com
+DOMAIN-SUFFIX,mountaintoys.cn
+DOMAIN-SUFFIX,nexusedgeio.com
+DOMAIN-SUFFIX,onethingpcs.com
+DOMAIN-SUFFIX,pcdn.yximgs.com
+DOMAIN-SUFFIX,ietheivaicai.com
+DOMAIN,stun.douyucdn.cn
+DOMAIN-SUFFIX,mcdn.bilivideo.cn
+DOMAIN,stun1.douyucdn.cn
+DOMAIN-SUFFIX,p2plog.douyucdn.cn
+DOMAIN-SUFFIX,p2perrorlog.douyucdn.cn
+DOMAIN-SUFFIX,p2pupdate.gamedl.qq.com
+DOMAIN-SUFFIX,p2pupgrade.gamedl.qq.com
+DOMAIN,livewebbs2pcdn.msstatic.com
+DOMAIN,qn-cdnfile1pcdn.msstatic.com
+DOMAIN,upos-sz-302kodo.bilivideo.com
+DOMAIN,upos-sz-302ppio.bilivideo.com
+DOMAIN-KEYWORD,-p2p.pull.yximgs.com
+DOMAIN-KEYWORD,-p2p-v2.pull.yximgs.com
+DOMAIN-WILDCARD,p2p*.qq.com
+DOMAIN-WILDCARD,p2p-*.douyucdn.cn
+DOMAIN-WILDCARD,p2pchunk-*.douyucdn.cn
+DOMAIN-WILDCARD,dyp2p-*.douyucdn.cn
+DOMAIN-WILDCARD,p2plive-*.douyucdn.cn
+DOMAIN-WILDCARD,stun*.douyucdn.cn
+DOMAIN-WILDCARD,upos-sz-302*.bilivideo.com
+################## EOF ##################

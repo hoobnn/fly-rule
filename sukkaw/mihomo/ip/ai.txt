@@ -1,0 +1,40 @@
+#########################################
+# Sukka's Ruleset - ChatGPT Voice IP CIDR
+# Last Updated: 2026-03-26T20:12:45.451Z
+# Size: 24
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file contains IP ranges used by ChatGPT Voice.
+#
+# This file contains data from:
+#   - https://openai.com/chatgpt-voice.json (last updated: 2026-03-26T20:12:45.451Z)
+#
+# $content-hash-v1$:7ePsedVTy4qFWs1-ctLTUgKS5TU8TaQE2-2VkF36A0c$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+IP-CIDR,4.151.200.38/32,no-resolve
+IP-CIDR,4.155.146.196/32,no-resolve
+IP-CIDR,4.197.172.116/32,no-resolve
+IP-CIDR,4.217.235.100/32,no-resolve
+IP-CIDR,4.245.198.13/32,no-resolve
+IP-CIDR,13.71.25.29/32,no-resolve
+IP-CIDR,20.74.221.21/32,no-resolve
+IP-CIDR,20.162.96.163/32,no-resolve
+IP-CIDR,20.168.48.117/32,no-resolve
+IP-CIDR,20.184.36.134/32,no-resolve
+IP-CIDR,20.203.144.245/32,no-resolve
+IP-CIDR,40.118.236.137/32,no-resolve
+IP-CIDR,51.4.112.173/32,no-resolve
+IP-CIDR,52.143.181.161/32,no-resolve
+IP-CIDR,68.155.152.41/32,no-resolve
+IP-CIDR,72.146.20.246/32,no-resolve
+IP-CIDR,74.248.148.7/32,no-resolve
+IP-CIDR,102.37.57.54/32,no-resolve
+IP-CIDR,135.220.40.201/32,no-resolve
+IP-CIDR,172.203.39.49/32,no-resolve
+IP-CIDR,172.207.173.200/32,no-resolve
+IP-CIDR,172.214.226.198/32,no-resolve
+IP-CIDR,191.233.251.27/32,no-resolve
+################## EOF ##################

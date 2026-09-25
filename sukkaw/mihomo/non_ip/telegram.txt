@@ -1,0 +1,28 @@
+#########################################
+# Sukka's Ruleset - Telegram Domains
+# Last Updated: 2026-08-05T12:33:04.439Z
+# Size: 15
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file contains domains used by Telegram Messenger.
+#
+# $content-hash-v1$:N5Chi4AVgtC3LLLZlmGjDDDOXFQFBqND031e-y63yX8$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,t.me
+DOMAIN-SUFFIX,tx.me
+DOMAIN-SUFFIX,tg.dev
+DOMAIN-SUFFIX,legra.ph
+DOMAIN-SUFFIX,graph.org
+DOMAIN-SUFFIX,telega.one
+DOMAIN-SUFFIX,telegra.ph
+DOMAIN-SUFFIX,telesco.pe
+DOMAIN-SUFFIX,telegram.me
+DOMAIN-SUFFIX,tdesktop.com
+DOMAIN-SUFFIX,telegram.dog
+DOMAIN-SUFFIX,telegram.org
+DOMAIN-SUFFIX,telegram.space
+DOMAIN-SUFFIX,cdn-telegram.org
+################## EOF ##################

@@ -1,0 +1,64 @@
+#########################################
+# Sukka's Ruleset - AIGC Domains
+# Last Updated: 2026-09-07T15:50:12.497Z
+# Size: 51
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file contains domains of OpenAI, Claude.
+#
+# $content-hash-v1$:PKi2X_B_KSi02t3IbaE37D39fCbwZlhiJV58bTIWwZI$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,g.ai
+DOMAIN-SUFFIX,x.ai
+DOMAIN-SUFFIX,ai.com
+DOMAIN-SUFFIX,dify.ai
+DOMAIN-SUFFIX,meta.ai
+DOMAIN-SUFFIX,poe.com
+DOMAIN-SUFFIX,chat.com
+DOMAIN-SUFFIX,grok.com
+DOMAIN-SUFFIX,groq.com
+DOMAIN-SUFFIX,sora.com
+DOMAIN-SUFFIX,claude.ai
+DOMAIN-SUFFIX,cursor.sh
+DOMAIN-SUFFIX,jasper.ai
+DOMAIN-SUFFIX,claude.com
+DOMAIN-SUFFIX,openart.ai
+DOMAIN-SUFFIX,chatgpt.com
+DOMAIN-SUFFIX,clipdrop.co
+DOMAIN-SUFFIX,chatgpt.site
+DOMAIN-SUFFIX,deepmind.com
+DOMAIN,ai.google.dev
+DOMAIN-SUFFIX,anthropic.com
+DOMAIN-SUFFIX,gemini.google
+DOMAIN-SUFFIX,oaistatic.com
+DOMAIN,openrouter.ai
+DOMAIN-SUFFIX,perplexity.ai
+DOMAIN,api.github.com
+DOMAIN-SUFFIX,bard.google.com
+DOMAIN-SUFFIX,deepmind.google
+DOMAIN,api.jetbrains.ai
+DOMAIN,jules.google.com
+DOMAIN-SUFFIX,gemini.google.com
+DOMAIN-SUFFIX,notebooklm.google
+DOMAIN,antigravity.google
+DOMAIN,aida.googleapis.com
+DOMAIN-SUFFIX,aistudio.google.com
+DOMAIN-SUFFIX,generativeai.google
+DOMAIN-SUFFIX,makersuite.google.com
+DOMAIN-SUFFIX,notebooklm.google.com
+DOMAIN,antigravity-unleash.goog
+DOMAIN-SUFFIX,geller-pa.googleapis.com
+DOMAIN,gateway.ai.cloudflare.com
+DOMAIN,aisandbox-pa.googleapis.com
+DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
+DOMAIN,robinfrontend-pa.googleapis.com
+DOMAIN,alkalicore-pa.clients6.google.com
+DOMAIN,daily-cloudcode-pa.googleapis.com
+DOMAIN-SUFFIX,generativelanguage.googleapis.com
+DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
+DOMAIN-KEYWORD,openai
+DOMAIN-KEYWORD,alkalimakersuite-pa.clients6.google.com
+################## EOF ##################

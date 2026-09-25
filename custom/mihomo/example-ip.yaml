@@ -1,0 +1,7 @@
+# example-ip
+# 由 fly-rule 自 custom/example.list 生成，请勿手工编辑
+# 规则数: 2
+# mihomo 引用时须写 behavior: ipcidr，写错会整表静默丢弃
+payload:
+  - '192.0.2.0/24'
+  - '2001:db8::/32'

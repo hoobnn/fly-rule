@@ -1,0 +1,68 @@
+#########################################
+# Sukka's Ruleset - Microsoft CDN
+# Last Updated: 2026-08-28T01:29:16.585Z
+# Size: 52
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file contains Microsoft's domains using their China mainland CDN servers.
+#
+# This file contains data from:
+#   - https://github.com/felixonmars/dnsmasq-china-list
+#
+# $content-hash-v1$:d6DtagMqM5mmReGi3HmQ5zd_9pMWbFzfgw93scIAb5I$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,sdx.microsoft.com
+DOMAIN,res.cdn.office.net
+DOMAIN,res-1.cdn.office.net
+DOMAIN,res-2.cdn.office.net
+DOMAIN-SUFFIX,download.microsoft.com
+DOMAIN-SUFFIX,b.c2r.ts.cdn.office.net
+DOMAIN-SUFFIX,ctldl.windowsupdate.com
+DOMAIN-SUFFIX,f.c2r.ts.cdn.office.net
+DOMAIN-SUFFIX,officecdn.microsoft.com
+DOMAIN-SUFFIX,storeedge.microsoft.com
+DOMAIN-SUFFIX,download.windowsupdate.com
+DOMAIN-SUFFIX,dl.delivery.mp.microsoft.com
+DOMAIN,res-h3.public.cdn.office.net
+DOMAIN,statics.teams.cdn.office.net
+DOMAIN-SUFFIX,vz.download.prss.microsoft.com
+DOMAIN-SUFFIX,lex.download.prss.microsoft.com
+DOMAIN-SUFFIX,mbs.download.prss.microsoft.com
+DOMAIN-SUFFIX,rsm.download.prss.microsoft.com
+DOMAIN-SUFFIX,msdn.download.prss.microsoft.com
+DOMAIN-SUFFIX,myvs.download.prss.microsoft.com
+DOMAIN-SUFFIX,volic.download.prss.microsoft.com
+DOMAIN-SUFFIX,lexuat.download.prss.microsoft.com
+DOMAIN-SUFFIX,oemsoc.download.prss.microsoft.com
+DOMAIN-SUFFIX,vscode.download.prss.microsoft.com
+DOMAIN-SUFFIX,windbg.download.prss.microsoft.com
+DOMAIN-SUFFIX,download.visualstudio.microsoft.com
+DOMAIN-SUFFIX,surface.download.prss.microsoft.com
+DOMAIN-SUFFIX,cbdstest.download.prss.microsoft.com
+DOMAIN-SUFFIX,software.download.prss.microsoft.com
+DOMAIN-SUFFIX,surface.downloads.prss.microsoft.com
+DOMAIN-SUFFIX,vlportal.download.prss.microsoft.com
+DOMAIN-SUFFIX,itacademy.download.prss.microsoft.com
+DOMAIN-SUFFIX,msproduct.download.prss.microsoft.com
+DOMAIN-SUFFIX,oemsocuat.download.prss.microsoft.com
+DOMAIN-SUFFIX,officemkt.download.prss.microsoft.com
+DOMAIN-SUFFIX,osrelease.download.prss.microsoft.com
+DOMAIN-SUFFIX,dreamspark.download.prss.microsoft.com
+DOMAIN-SUFFIX,msdprod-ad.download.prss.microsoft.com
+DOMAIN-SUFFIX,collaborate.download.prss.microsoft.com
+DOMAIN-SUFFIX,mpnbenefits.download.prss.microsoft.com
+DOMAIN-SUFFIX,azuremigrate.download.prss.microsoft.com
+DOMAIN-SUFFIX,itacademyuat.download.prss.microsoft.com
+DOMAIN-SUFFIX,officemktuat.download.prss.microsoft.com
+DOMAIN-SUFFIX,azurestackhub.download.prss.microsoft.com
+DOMAIN-SUFFIX,dreamsparkuat.download.prss.microsoft.com
+DOMAIN-SUFFIX,collaborateppe.download.prss.microsoft.com
+DOMAIN-SUFFIX,mpnbenefitsrtl.download.prss.microsoft.com
+DOMAIN-SUFFIX,azuremigratetest.download.prss.microsoft.com
+DOMAIN-SUFFIX,azurestackhubuat.download.prss.microsoft.com
+DOMAIN-SUFFIX,mpnbenefitsrtluat.download.prss.microsoft.com
+DOMAIN-SUFFIX,storecorefulfillment.download.prss.microsoft.com
+################## EOF ##################
