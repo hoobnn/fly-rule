@@ -13,7 +13,8 @@ behavior 配错时 mihomo 只会静默丢表，不报错，事后很难发现。
 mrs 产物同时校验存在性与魔数：引用方按 format: mrs 拉到 404 或坏文件时，
 mihomo 会整表加载失败。
 镜像里 domain 形态的 yaml 若含 mihomo 不支持的通配（如上游把 DOMAIN-KEYWORD
-写成 `*kw*`），只告警不拦截：镜像必须与上游逐字节一致，修不了，但要让人看见。
+写成 `*kw*`），或 .list / .conf 里有 Surge 不认的类型名（DST-PORT、SRC-IP-CIDR），
+只告警不拦截：镜像必须与上游逐字节一致，修不了，但要让人看见。
 """
 
 from __future__ import annotations
@@ -30,12 +31,15 @@ WORK = ROOT / ".work"
 
 DOMAIN_RULE = re.compile(r"^(DOMAIN|DOMAIN-SUFFIX),[A-Za-z0-9.*_-]+$")
 IP_RULE = re.compile(r"^(IP-CIDR|IP-CIDR6),[0-9A-Fa-f.:]+/\d{1,3}$")
-# 自定义规则用 classical 语法：域名、IP、进程、端口都允许
-CLASSICAL_RULE = re.compile(
+# 自定义规则的 Surge 产物是 classical 语法：域名、IP、进程、端口都允许。
+# 端口与来源 IP 用 Surge 的类型名（DEST-PORT / SRC-IP），
+# 写成 mihomo 的 DST-PORT / SRC-IP-CIDR 会被 Surge 当非法行跳过
+SURGE_CLASSICAL_RULE = re.compile(
     r"^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|DOMAIN-WILDCARD"
     r"|IP-CIDR|IP-CIDR6|IP-ASN"
-    r"|PROCESS-NAME|DST-PORT|SRC-PORT|SRC-IP-CIDR),.+$"
+    r"|PROCESS-NAME|DEST-PORT|SRC-PORT|SRC-IP),.+$"
 )
+SURGE_UNSUPPORTED = re.compile(r"^(DST-PORT|SRC-IP-CIDR),")
 PAYLOAD_ITEM = re.compile(r"  - '[^']+'")
 
 # mihomo 三种 behavior 各自的 payload 形态。配错 behavior 时 mihomo 会逐行
@@ -88,7 +92,7 @@ def check_custom(dist: Path, require_mrs: bool = False) -> tuple[list[str], int]
 
     for f in sorted((cdir / "surge").glob("*.conf")):
         lines = rule_lines(f)
-        bad = [l for l in lines if not CLASSICAL_RULE.match(l)]
+        bad = [l for l in lines if not SURGE_CLASSICAL_RULE.match(l)]
         if bad:
             errors.append(
                 f"custom/surge/{f.name} 语法非法 {len(bad)} 行，例: {bad[0]!r}"
@@ -286,6 +290,17 @@ def main() -> int:
                         warnings.append(
                             f"{label}/{f.relative_to(base)} 有 {len(bad)} 条 mihomo "
                             f"domain 不支持的通配，会被丢弃，例: {bad[0]!r}"
+                        )
+                    if f.suffix in {".list", ".conf"} and (
+                        bad := [
+                            line
+                            for line in rule_lines(f)
+                            if SURGE_UNSUPPORTED.match(line)
+                        ]
+                    ):
+                        warnings.append(
+                            f"{label}/{f.relative_to(base)} 有 {len(bad)} 条 Surge "
+                            f"不认的规则类型，Surge 引用时会跳过，例: {bad[0]!r}"
                         )
                 # 上游有但我们漏掉的（排除项除外）
                 for up in sorted(src_dir.rglob("*")):
