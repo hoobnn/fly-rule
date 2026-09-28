@@ -189,6 +189,111 @@ def convert_ip(text: str) -> tuple[list[str], list[str]]:
     return rules, bad
 
 
+WILDCARD_KEYWORD = re.compile(r"^\*([^*]+)\*$")
+
+
+def domain_index(classical_dir: Path) -> set[str]:
+    """geosite classical 里全部 DOMAIN / DOMAIN-SUFFIX 的值，供展开关键字用。"""
+    values: set[str] = set()
+    for f in classical_dir.glob("*.list"):
+        for raw in f.read_text(encoding="utf-8", errors="ignore").splitlines():
+            kind, _, value = raw.strip().partition(",")
+            if kind in ("DOMAIN", "DOMAIN-SUFFIX") and DOMAIN_RE.fullmatch(value):
+                values.add(value.lower())
+    return values
+
+
+def expand_keyword(keyword: str, index: set[str]) -> list[str]:
+    """把关键字展开成已知的具体域名（+.形式）。
+
+    mihomo 的 domain behavior 不做子串匹配，DOMAIN-KEYWORD 无法表达；这里在
+    geosite 已收录的域名里找包含该关键字的，被其他后缀覆盖的子域不重复列出。
+    """
+    hits = {v for v in index if keyword.lower() in v}
+    kept = [v for v in hits if not any(v.endswith("." + u) for u in hits if u != v)]
+    return [f"+.{v}" for v in sorted(kept)]
+
+
+def mihomo_tree(
+    src_dir: Path,
+    out_dir: Path,
+    index: set[str],
+    header: str,
+    exclude: list[str] | None = None,
+) -> dict:
+    """镜像的 mihomo 专用版：domain 形态 yaml 里的 `*kw*` 展开成具体域名。
+
+    上游把 DOMAIN-KEYWORD 写成 `*kw*` 塞进 domain 规则集，mihomo 只会当非法域名
+    丢弃。改写过的 yaml 删掉上游的同名 mrs，由 mrs.py 重新编译；其余文件原样。
+    """
+    skip = set(exclude or [])
+    stats: dict = {"files": 0, "adapted": [], "expanded": {}, "dropped": []}
+    adapted_mrs: set[Path] = set()
+    for f in sorted(src_dir.rglob("*")):
+        rel = f.relative_to(src_dir)
+        if not f.is_file() or (skip and rel.parts and rel.parts[0] in skip):
+            continue
+        dest = out_dir / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        text = (
+            f.read_text(encoding="utf-8", errors="ignore")
+            if f.suffix == ".yaml"
+            else ""
+        )
+        if f.suffix != ".yaml" or not re.search(r"^\s*- '?\*[^*]+\*'?\s*$", text, re.M):
+            shutil.copy2(f, dest)
+            stats["files"] += 1
+            continue
+
+        items, notes = [], []
+        existing = {
+            ln.strip()[2:].strip().strip("'\"")
+            for ln in text.splitlines()
+            if ln.strip().startswith("- ")
+        }
+        out_lines = []
+        for ln in text.splitlines():
+            item = (
+                ln.strip()[2:].strip().strip("'\"")
+                if ln.strip().startswith("- ")
+                else None
+            )
+            m = WILDCARD_KEYWORD.fullmatch(item or "")
+            if not m:
+                out_lines.append(ln)
+                if item is not None:
+                    items.append(item)
+                continue
+            kw = m.group(1)
+            known = expand_keyword(kw, index)
+            doms = [d for d in known if d not in existing]
+            existing.update(doms)
+            indent = ln[: len(ln) - len(ln.lstrip())]
+            out_lines += [f"{indent}- '{d}'" for d in doms]
+            items += doms
+            stats["expanded"][f"{rel.as_posix()}: {kw}"] = doms
+            if doms:
+                notes.append(f"DOMAIN-KEYWORD,{kw} -> 补 {len(doms)} 个域名")
+            elif known:
+                notes.append(f"DOMAIN-KEYWORD,{kw} 的已知域名本表已收录，无需补充")
+            else:
+                notes.append(f"DOMAIN-KEYWORD,{kw} 无已知域名可展开，已丢弃")
+                stats["dropped"].append(f"{rel.as_posix()}: {kw}")
+        body = "\n".join(
+            re.sub(r"^# TOTAL: \d+$", f"# TOTAL: {len(items)}", ln) for ln in out_lines
+        )
+        head = header + f"# 上游: {rel.as_posix()}\n"
+        head += "".join(f"# 关键字展开（取自 MetaCubeX geosite）: {n}\n" for n in notes)
+        dest.write_text(head + body + "\n", encoding="utf-8")
+        stats["files"] += 1
+        stats["adapted"].append(rel.as_posix())
+        adapted_mrs.add(rel.with_suffix(".mrs"))
+    # 改写过的 yaml，上游 mrs 与之不一致，删掉由 mrs.py 重编
+    for rel in adapted_mrs:
+        (out_dir / rel).unlink(missing_ok=True)
+    return stats
+
+
 def surge_tree(
     src_dir: Path, out_dir: Path, header: str, exclude: list[str] | None = None
 ) -> dict:
@@ -286,6 +391,26 @@ def build_dataset(src: dict, ds: dict, rev: str, dist: Path, no_mirror: bool) ->
             )
             for d in st["dropped"][:10]:
                 print(f"    - 跳过 {d}")
+        if ds.get("mihomo_out"):
+            index_dir = WORK / ds["keyword_index"]
+            if not index_dir.is_dir():
+                sys.exit(f"关键字展开需要 {index_dir}，先构建 metacubex")
+            mt = mihomo_tree(
+                src_dir,
+                dist / src["key"] / ds["mihomo_out"],
+                domain_index(index_dir),
+                f"# 由 fly-rule 自 {src['key']}@{rev} 转换（mihomo 专用），"
+                "请勿手工编辑\n",
+                ds.get("exclude"),
+            )
+            print(
+                f"  {ds['mihomo_out']:<18} mihomo 转换 {mt['files']} 个文件，"
+                f"改写 {len(mt['adapted'])} 个"
+            )
+            for k, v in mt["expanded"].items():
+                print(f"    - {k} -> {', '.join(v) or '（无需补充或无可展开）'}")
+            for d in mt["dropped"]:
+                print(f"    - 无已知域名可展开，已丢弃: {d}")
         return {
             "dataset": ds["name"],
             "path": ds["path"],

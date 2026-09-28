@@ -14,7 +14,7 @@ panic（不是返回错误），所以这里按文件名后缀分派，绝不把
 
 用法：
 
-    python3 scripts/mrs.py            # 编译 dist/custom/mihomo 下的产物
+    python3 scripts/mrs.py            # 编译 custom/mihomo 与 */rule-mihomo 下的产物
     python3 scripts/mrs.py --check    # 只检查 mihomo 是否可用
 
 找不到 mihomo 时默认跳过并提示（本地开发不必为此装二进制），CI 里用
@@ -33,6 +33,18 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # 文件名后缀 -> behavior。没列进来的（classical 的 <name>.yaml）不编译。
 SUFFIX_BEHAVIOR = {"-domain": "domain", "-ip": "ipcidr"}
+# build.py 改写上游 yaml 时写在文件头的标记
+ADAPTED_MARK = "转换（mihomo 专用）"
+
+
+def upstream_behavior(path: Path) -> str | None:
+    """Aethersailor 的命名：<名字>_Domain、<名字>_IP；_Classical_IP 是 classical。"""
+    stem = path.stem
+    if stem.endswith("_Domain"):
+        return "domain"
+    if stem.endswith("_IP") and not stem.endswith("_Classical_IP"):
+        return "ipcidr"
+    return None
 
 
 def find_mihomo() -> str | None:
@@ -128,6 +140,22 @@ def main() -> int:
         return 1
 
     made, errors = build(mihomo, mihomo_dir)
+
+    # 上游镜像的 mihomo 专用版（build.py 的 mihomo_out）：只重编 build.py 改写过的
+    # yaml（文件头带 ADAPTED_MARK，上游 mrs 已删），behavior 按上游命名判断
+    for src in sorted((ROOT / "dist").glob("*/rule-mihomo/**/*.yaml")):
+        if ADAPTED_MARK not in src.read_text(encoding="utf-8").split("payload:")[0]:
+            continue
+        behavior = upstream_behavior(src)
+        if behavior is None:
+            errors.append(f"{src.relative_to(ROOT / 'dist')}: 无法判断 behavior")
+            continue
+        ok, why = convert(mihomo, src, behavior)
+        if ok:
+            made += 1
+        else:
+            errors.append(f"{src.relative_to(ROOT / 'dist')}: {why}")
+
     if errors:
         print("mrs 编译失败:", file=sys.stderr)
         for e in errors:

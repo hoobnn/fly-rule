@@ -6,7 +6,7 @@ mihomo 遇到解析不了的条目只打一行 warning 就跳过，整表照常�
 静态校验只能覆盖已知的坑，这里直接问内核：起一个只挂规则集的 mihomo，
 从 /providers/rules 读 ruleCount，少于文件去重条数就是被丢了。
 
-查的范围：custom/mihomo（自产，丢条即失败），aethersailor/rule 与
+查的范围：custom/mihomo 与 aethersailor/rule-mihomo（自产，丢条即失败），
 sukkaw/mihomo（镜像，丢条只告警）。metacubex 的 mihomo 产物由上游用
 mihomo 自己生成，不在此列。
 
@@ -76,7 +76,11 @@ def targets(only_custom: bool) -> list[tuple[Path, bool]]:
     """(文件, 是否自产)。"""
     out = [(f, True) for f in sorted((DIST / "custom" / "mihomo").glob("*"))]
     if not only_custom:
-        out += [(f, False) for f in sorted((DIST / "aethersailor" / "rule").rglob("*"))]
+        # Aethersailor 查 mihomo 专用版（自产，丢条即失败）；镜像的 rule/ 只作对照
+        out += [
+            (f, True)
+            for f in sorted((DIST / "aethersailor" / "rule-mihomo").rglob("*"))
+        ]
         out += [(f, False) for f in sorted((DIST / "sukkaw" / "mihomo").rglob("*"))]
     return [(f, own) for f, own in out if f.is_file() and f.suffix in FORMAT]
 

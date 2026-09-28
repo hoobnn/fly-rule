@@ -191,6 +191,42 @@ def unsupported_domain_items(f: Path) -> list[str]:
     ]
 
 
+def check_mihomo_out(
+    src_dir: Path, out_dir: Path, exclude: list | None, require_mrs: bool
+) -> list[str]:
+    """镜像的 mihomo 专用版：文件齐全，未改写的与上游一致，domain 规则集无非法通配。
+
+    改写过的 yaml（build.py 展开了 `*kw*`）删掉了上游 mrs，由 mrs.py 重编。
+    """
+    errors: list[str] = []
+    skip = set(exclude or [])
+    label = out_dir.relative_to(out_dir.parent.parent).as_posix()
+    for up in sorted(src_dir.rglob("*")):
+        rel = up.relative_to(src_dir)
+        if not up.is_file() or (skip and rel.parts and rel.parts[0] in skip):
+            continue
+        f = out_dir / rel
+        adapted = (out_dir / rel.with_suffix(".yaml")).is_file() and (
+            (out_dir / rel.with_suffix(".yaml")).read_bytes()
+            != (src_dir / rel.with_suffix(".yaml")).read_bytes()
+        )
+        if up.suffix == ".mrs" and adapted:
+            if require_mrs and not f.is_file():
+                errors.append(f"{label}/{rel} 缺失（改写过的 yaml 须重编 mrs）")
+            continue
+        if not f.is_file():
+            errors.append(f"{label}/{rel} 缺失")
+            continue
+        if not (up.suffix == ".yaml" and adapted) and f.read_bytes() != up.read_bytes():
+            errors.append(f"{label}/{rel} 未改写却与上游不一致")
+        if f.suffix == ".yaml" and (bad := unsupported_domain_items(f)):
+            errors.append(
+                f"{label}/{rel} 有 {len(bad)} 条 mihomo domain 不支持的通配，"
+                f"例: {bad[0]!r}"
+            )
+    return errors
+
+
 def check_surge_out(src_dir: Path, out_dir: Path, exclude: list | None) -> list[str]:
     """镜像的 Surge 专用版：每个上游 .list 都有、Surge 不会跳过、条数无损。"""
     errors: list[str] = []
@@ -326,7 +362,12 @@ def main() -> int:
                         errors.append(f"{label}/{f.relative_to(base)} 上游已无此文件")
                     elif f.read_bytes() != up.read_bytes():
                         errors.append(f"{label}/{f.relative_to(base)} 与上游不一致")
-                    if f.suffix == ".yaml" and (bad := unsupported_domain_items(f)):
+                    # 有 mihomo 专用版的数据集，mihomo 该引用那份，这里不再告警
+                    if (
+                        f.suffix == ".yaml"
+                        and not ds.get("mihomo_out")
+                        and (bad := unsupported_domain_items(f))
+                    ):
                         warnings.append(
                             f"{label}/{f.relative_to(base)} 有 {len(bad)} 条 mihomo "
                             f"domain 不支持的通配，会被丢弃，例: {bad[0]!r}"
@@ -341,6 +382,13 @@ def main() -> int:
                             f"{label}/{f.relative_to(base)} 有 {len(bad)} 行 Surge "
                             f"引用时会跳过，例: {bad[0]}"
                         )
+                if ds.get("mihomo_out"):
+                    errors += check_mihomo_out(
+                        src_dir,
+                        dist / key / ds["mihomo_out"],
+                        ds.get("exclude"),
+                        a.require_mrs,
+                    )
                 if ds.get("surge_out"):
                     errors += check_surge_out(
                         src_dir, dist / key / ds["surge_out"], ds.get("exclude")

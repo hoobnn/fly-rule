@@ -66,6 +66,7 @@ mirror_tree = true
 # Aethersailor 的 rule/ 是上游为 OpenClash 生成的成品，原样镜像。
 # .list 按 mihomo 写法（DST-PORT、IPv6 也写 IP-CIDR），Surge 加载时会静默跳过
 # 这些行，所以另出一份 Surge 专用版到 surge_out（rule-surge/），Surge 引用那份。
+# 镜像的 rule/ 保持与上游一致，只作对照；两端都引用各自的专用版。
 [[sources]]
 key = "aethersailor"
 repo = "https://github.com/Aethersailor/Custom_OpenClash_Rules.git"
@@ -79,3 +80,7 @@ mirror_tree = true
 # archived 是作者已废弃的规则，不转发
 exclude = ["archived"]
 surge_out = "rule-surge"
+# domain 规则集里的 `*kw*`（上游的 DOMAIN-KEYWORD）mihomo 会当非法域名丢弃，
+# 另出 mihomo 专用版，把关键字按 MetaCubeX geosite 已收录的域名展开。
+mihomo_out = "rule-mihomo"
+keyword_index = "metacubex/geo/geosite/classical"
