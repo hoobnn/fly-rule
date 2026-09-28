@@ -1,2 +1,33 @@
 DOMAIN-SUFFIX,ikuyu.com
 DOMAIN-SUFFIX,triotea.com
+
+# Aethersailor Custom_Direct.list 里的 DOMAIN-KEYWORD（m-team / synology /
+# quickconnect）在 mihomo 的 domain behavior 下无法表达，Custom_Direct_Domain
+# 里的 `*kw*` 会被 mihomo 当非法域名丢弃。这里改写成具体域名补上。
+# Synology 一组取自 MetaCubeX geosite:synology。
+
+# M-Team（PT 站）
+DOMAIN-SUFFIX,m-team.cc
+DOMAIN-SUFFIX,m-team.io
+
+# Synology / QuickConnect
+DOMAIN-SUFFIX,synology.com
+DOMAIN-SUFFIX,synology.cn
+DOMAIN-SUFFIX,synology.me
+DOMAIN-SUFFIX,synologydownload.com
+DOMAIN-SUFFIX,synologyupdate.com
+DOMAIN-SUFFIX,quickconnect.to
+DOMAIN-SUFFIX,quickconnect.cn
+DOMAIN-SUFFIX,gofile.me
+DOMAIN-SUFFIX,diskstation.me
+DOMAIN-SUFFIX,dscloud.biz
+DOMAIN-SUFFIX,dscloud.me
+DOMAIN-SUFFIX,dscloud.mobi
+DOMAIN-SUFFIX,dsmynas.com
+DOMAIN-SUFFIX,dsmynas.net
+DOMAIN-SUFFIX,dsmynas.org
+DOMAIN-SUFFIX,familyds.com
+DOMAIN-SUFFIX,familyds.net
+DOMAIN-SUFFIX,familyds.org
+DOMAIN-SUFFIX,i234.me
+DOMAIN-SUFFIX,myds.me
