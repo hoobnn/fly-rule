@@ -10,6 +10,7 @@ on:
       - "scripts/custom.py"
       - "scripts/mrs.py"
       - "scripts/verify.py"
+      - "scripts/loadcheck.py"
       - ".github/workflows/custom.yml"
   workflow_dispatch:
 
@@ -72,6 +73,9 @@ jobs:
       # 只挑出它的 custom 校验逻辑单独跑。
       - name: Verify custom output
         run: python scripts/verify.py --only-custom --require-mrs
+
+      - name: Load check with mihomo
+        run: python scripts/loadcheck.py --only-custom --require
 
       - name: Publish custom/ to release branch
         if: github.ref == 'refs/heads/main'

@@ -86,6 +86,10 @@ jobs:
       - name: Verify output
         run: python scripts/verify.py --require-mrs
 
+      # 静态校验只能覆盖已知的坑。让 mihomo 实际加载一遍，条数对不上就是被静默丢了。
+      - name: Load check with mihomo
+        run: python scripts/loadcheck.py --require
+
       # 我们忠实同步上游，上游出问题会直接传导到产物。
       # 与上次发布比对，异常缩水就拦下，不让坏数据进 release。
       - name: Guard against upstream regression

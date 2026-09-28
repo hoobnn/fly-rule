@@ -55,6 +55,8 @@ python3 scripts/build.py     # 同步所有上游（--only <key> 只构建一个
 python3 scripts/custom.py    # 只重建自定义规则
 python3 scripts/mrs.py       # 把 custom 的 domain/ipcidr 产物编译成 mrs（需 mihomo）
 python3 scripts/verify.py    # 语法 / 重复 / 无损门禁（--only-custom 只查 custom/）
+python3 scripts/loadcheck.py # 用 mihomo 实际加载，核对条数（需 mihomo）
+python3 scripts/surgecheck.py  # 用 Surge 解析器复核（仅限装了 Surge 的 Mac）
 python3 scripts/guard.py --repo <user>/fly-rule
 pnpm lint                    # ruff + markdownlint
 ```
@@ -74,8 +76,23 @@ CI 有两个 workflow，都发布到 `release`：
 
 ## 门禁
 
-`verify.py` 逐文件核对转换产物条数与上游一致、镜像逐字节一致；
+`verify.py` 逐文件核对转换产物条数与上游一致、镜像逐字节一致，并逐行检查
+Surge 侧会不会跳过（类型白名单按 `surge-cli --check` 实测）；
+`loadcheck.py` 让 mihomo 实际加载 custom 与镜像规则集，加载条数少于文件条数
+即判为被静默丢弃；
 `guard.py` 与上次发布比对，类别消失或条数暴跌超 50% 就拦下发布。CI 里都是硬门禁。
+镜像与上游逐字节一致、修不了，其中的问题只告警，出现在 CI 运行摘要里。
+
+两端都有对方表达不了的规则，转换时的取舍：
+
+| 规则 | Surge 产物 | mihomo domain / mrs |
+| --- | --- | --- |
+| `DOMAIN-KEYWORD` | 保留 | 表达不了，排除 |
+| `DOMAIN-REGEX`（geosite 的 regexp） | 不支持，跳过并在文件头注明 | 上游已排除 |
+| `DST-PORT` / `SRC-IP-CIDR`（custom） | 改写为 `DEST-PORT` / `SRC-IP` | classical 原样 |
+
+`surgecheck.py` 只能在装了 Surge 的 Mac 上跑，改了转换逻辑或 Surge 升级后
+本地跑一次，确认白名单没有漂移。
 
 ## 许可与法律说明
 
