@@ -31,3 +31,6 @@ DOMAIN-SUFFIX,familyds.net
 DOMAIN-SUFFIX,familyds.org
 DOMAIN-SUFFIX,i234.me
 DOMAIN-SUFFIX,myds.me
+
+# ebopark 国内停车服务（SukkaW IP 规则全带 no-resolve，不加会落兜底走美国出口）
+DOMAIN-SUFFIX,ebopark.com
