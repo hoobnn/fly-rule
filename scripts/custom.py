@@ -57,10 +57,16 @@ DOMAIN_TYPES = {"DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-WILDCARD"}
 IP_TYPES = {"IP-CIDR", "IP-CIDR6", "IP-ASN"}
 OTHER_TYPES = {"PROCESS-NAME", "DST-PORT", "SRC-PORT", "SRC-IP-CIDR"}
 ALL_TYPES = DOMAIN_TYPES | IP_TYPES | OTHER_TYPES
+# 源文件用 mihomo 的写法；Surge 同义规则的类型名不同，照抄会被 Surge 当非法行跳过
+SURGE_TYPE = {"DST-PORT": "DEST-PORT", "SRC-IP-CIDR": "SRC-IP"}
 
 DOMAIN_VALUE = re.compile(r"^[A-Za-z0-9*]([A-Za-z0-9*._-]*)$")
 V4 = re.compile(r"^\d{1,3}(\.\d{1,3}){3}/\d{1,2}$")
 V6 = re.compile(r"^[0-9A-Fa-f:]+/\d{1,3}$")
+
+
+def surge_line(k: str, v: str) -> str:
+    return f"{SURGE_TYPE.get(k, k)},{v}"
 
 
 def parse(path: Path) -> tuple[list[tuple[str, str]], list[str]]:
@@ -184,10 +190,10 @@ def build(src_dir: Path, out_dir: Path) -> dict:
         stats["files"] += 1
         stats["rules"] += len(rules)
 
-        # Surge：classical 原样（域名与 IP 混写）
+        # Surge：classical 混写（域名与 IP 混写），类型名按 Surge 改写
         (surge_dir / f"{name}.conf").write_text(
             make_head(f.name, name, len(rules))
-            + "\n".join(f"{k},{v}" for k, v in rules)
+            + "\n".join(surge_line(k, v) for k, v in rules)
             + "\n",
             encoding="utf-8",
         )
@@ -204,7 +210,7 @@ def build(src_dir: Path, out_dir: Path) -> dict:
             if suffix == "ip":
                 sub_head += "# 引用时需加 no-resolve，且须排在所有域名规则之后\n"
             (surge_dir / f"{name}-{suffix}.conf").write_text(
-                sub_head + "\n".join(f"{k},{v}" for k, v in subset) + "\n",
+                sub_head + "\n".join(surge_line(k, v) for k, v in subset) + "\n",
                 encoding="utf-8",
             )
 

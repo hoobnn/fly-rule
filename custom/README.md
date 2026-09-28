@@ -26,6 +26,9 @@ PROCESS-NAME,Transmission
 | IP | `IP-CIDR`、`IP-CIDR6`、`IP-ASN` |
 | 其他 | `PROCESS-NAME`、`DST-PORT`、`SRC-PORT`、`SRC-IP-CIDR` |
 
+源文件按 mihomo 的写法写 `DST-PORT`、`SRC-IP-CIDR`，生成 Surge 产物时自动改写为
+Surge 的 `DEST-PORT`、`SRC-IP`（Surge 不认前者，会当非法行跳过）。
+
 `#` 开头是注释。写错类型或域名值不合法，构建会失败并指出是哪一行。
 
 ## 派生出什么
