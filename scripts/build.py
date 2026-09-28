@@ -7,7 +7,14 @@
     release/<上游>/<数据集>/mihomo/*.mrs|…     上游格式原样镜像
     release/custom/*.conf                      自定义规则
 
-域名侧（kind: domain），上游是 mihomo `behavior: domain` 格式：
+域名侧（kind: domain）优先读上游 classical/ 目录（带规则类型的完整版）：
+
+    DOMAIN / DOMAIN-SUFFIX / DOMAIN-KEYWORD   原样保留
+    DOMAIN-REGEX                              Surge 不支持，跳过并在文件头注明
+
+classical 缺失时回退到 mihomo `behavior: domain` 格式。注意 domain 形态本身
+就没有 KEYWORD 与 REGEX（mihomo domain behavior 表达不了），只用它转换会把
+Surge 完全支持的 DOMAIN-KEYWORD 一起丢掉：
 
     +.example.com   ->  DOMAIN-SUFFIX,example.com
     example.com     ->  DOMAIN,example.com
@@ -17,8 +24,8 @@ IP 侧（kind: ip），上游是裸 CIDR：
     1.0.1.0/24      ->  IP-CIDR,1.0.1.0/24
     2001:250::/30   ->  IP-CIDR6,2001:250::/30
 
-转换无损 —— 上游已在编译阶段把 include / 属性 / 正则全部展开固化，
-产物里不存在 Surge 表达不了的形态。
+除 DOMAIN-REGEX 外转换无损：上游已在编译阶段把 include / 属性展开固化，
+正则则保留为 DOMAIN-REGEX，Surge 没有对应规则类型。
 """
 
 from __future__ import annotations
@@ -132,6 +139,36 @@ def convert_domain(text: str) -> tuple[list[str], list[str]]:
     return rules, bad
 
 
+# classical 里 KEYWORD 的值是子串，可以带首尾点（如 `.pinterest.`），不套 DOMAIN_RE
+KEYWORD_RE = re.compile(r"^[^,\s]+$")
+
+
+def convert_domain_classical(text: str) -> tuple[list[str], list[str], list[str]]:
+    """classical 源 -> Surge。返回 (规则, 无法转换的行, 跳过的 DOMAIN-REGEX)。"""
+    rules, bad, regex, seen = [], [], [], set()
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        kind, _, value = line.partition(",")
+        if kind == "DOMAIN-REGEX":
+            regex.append(line)
+            continue
+        if kind in ("DOMAIN", "DOMAIN-SUFFIX"):
+            ok = bool(value) and DOMAIN_RE.fullmatch(value)
+        elif kind == "DOMAIN-KEYWORD":
+            ok = bool(KEYWORD_RE.fullmatch(value))
+        else:
+            ok = False
+        if not ok:
+            bad.append(line)
+            continue
+        if line not in seen:
+            seen.add(line)
+            rules.append(line)
+    return rules, bad, regex
+
+
 def convert_ip(text: str) -> tuple[list[str], list[str]]:
     rules, bad, seen = [], [], set()
     for raw in text.splitlines():
@@ -208,27 +245,49 @@ def build_dataset(src: dict, ds: dict, rev: str, dist: Path, no_mirror: bool) ->
     out_dir = base / "surge"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    convert = convert_domain if ds["kind"] == "domain" else convert_ip
-    rulesets, empty, bad_total = [], [], 0
+    rulesets, empty, bad_total, regex_total = [], [], 0, 0
 
     for f in sorted(src_dir.glob("*.list")):
         name = f.name[: -len(".list")]
-        rules, bad = convert(f.read_text(encoding="utf-8", errors="ignore"))
+        classical = src_dir / "classical" / f.name
+        regex: list[str] = []
+        if ds["kind"] == "domain" and classical.is_file():
+            upstream = f"{ds['path']}/classical/{name}.list"
+            rules, bad, regex = convert_domain_classical(
+                classical.read_text(encoding="utf-8", errors="ignore")
+            )
+        else:
+            upstream = f"{ds['path']}/{name}.list"
+            convert = convert_domain if ds["kind"] == "domain" else convert_ip
+            rules, bad = convert(f.read_text(encoding="utf-8", errors="ignore"))
         bad_total += len(bad)
+        regex_total += len(regex)
         if not rules:
             empty.append(name)
             continue
         header = (
             f"# {name}\n"
             f"# 由 fly-rule 自 {src['key']}@{rev} 转换，请勿手工编辑\n"
-            f"# 上游: {ds['path']}/{name}.list | 规则数: {len(rules)}\n"
+            f"# 上游: {upstream} | 规则数: {len(rules)}\n"
         )
         if bad:
             header += f"# 跳过无法转换的 {len(bad)} 行，例: {bad[0]!r}\n"
+        if regex:
+            header += (
+                f"# 跳过 Surge 不支持的 DOMAIN-REGEX {len(regex)} 条，"
+                f"例: {regex[0]!r}\n"
+            )
         (out_dir / f"{name}.conf").write_text(
             header + "\n".join(rules) + "\n", encoding="utf-8"
         )
-        rulesets.append({"category": name, "rules": len(rules), "skipped": len(bad)})
+        rulesets.append(
+            {
+                "category": name,
+                "rules": len(rules),
+                "skipped": len(bad),
+                "regex_skipped": len(regex),
+            }
+        )
 
     mirror = {}
     if not no_mirror:
@@ -256,6 +315,7 @@ def build_dataset(src: dict, ds: dict, rev: str, dist: Path, no_mirror: bool) ->
     total = sum(r["rules"] for r in rulesets)
     print(
         f"  {ds['name']:<18} {len(rulesets):>5} 个规则集 / {total:>7} 条"
+        + (f"，跳过 DOMAIN-REGEX {regex_total} 条" if regex_total else "")
         + (f"，镜像 {sum(mirror.values())} 个文件" if mirror else "")
     )
     return {
@@ -265,6 +325,7 @@ def build_dataset(src: dict, ds: dict, rev: str, dist: Path, no_mirror: bool) ->
         "categories": len(rulesets),
         "total_rules": total,
         "skipped_lines": bad_total,
+        "regex_skipped": regex_total,
         "empty_categories": empty,
         "mirrored": mirror,
         "rulesets": rulesets,

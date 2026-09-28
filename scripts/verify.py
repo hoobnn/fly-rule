@@ -12,9 +12,12 @@
 behavior 配错时 mihomo 只会静默丢表，不报错，事后很难发现。
 mrs 产物同时校验存在性与魔数：引用方按 format: mrs 拉到 404 或坏文件时，
 mihomo 会整表加载失败。
+Surge 侧产物逐行过 surge_line_problem()：类型白名单与 IP-CIDR / IP-CIDR6 的
+取值以 surge-cli --check 实测为准（scripts/surgecheck.py 可在装了 Surge 的
+Mac 上用真实解析器复核）。自产文件命中即失败。
 镜像里 domain 形态的 yaml 若含 mihomo 不支持的通配（如上游把 DOMAIN-KEYWORD
-写成 `*kw*`），或 .list / .conf 里有 Surge 不认的类型名（DST-PORT、SRC-IP-CIDR），
-只告警不拦截：镜像必须与上游逐字节一致，修不了，但要让人看见。
+写成 `*kw*`），或 .list / .conf 里有 Surge 会跳过的行，只告警不拦截：
+镜像必须与上游逐字节一致，修不了，但要让人看见。
 """
 
 from __future__ import annotations
@@ -29,17 +32,49 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / ".work"
 
-DOMAIN_RULE = re.compile(r"^(DOMAIN|DOMAIN-SUFFIX),[A-Za-z0-9.*_-]+$")
-IP_RULE = re.compile(r"^(IP-CIDR|IP-CIDR6),[0-9A-Fa-f.:]+/\d{1,3}$")
-# 自定义规则的 Surge 产物是 classical 语法：域名、IP、进程、端口都允许。
-# 端口与来源 IP 用 Surge 的类型名（DEST-PORT / SRC-IP），
-# 写成 mihomo 的 DST-PORT / SRC-IP-CIDR 会被 Surge 当非法行跳过
-SURGE_CLASSICAL_RULE = re.compile(
-    r"^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|DOMAIN-WILDCARD"
-    r"|IP-CIDR|IP-CIDR6|IP-ASN"
-    r"|PROCESS-NAME|DEST-PORT|SRC-PORT|SRC-IP),.+$"
+DOMAIN_RULE = re.compile(
+    r"^(DOMAIN|DOMAIN-SUFFIX),[A-Za-z0-9.*_-]+$|^DOMAIN-KEYWORD,[^,\s]+$"
 )
-SURGE_UNSUPPORTED = re.compile(r"^(DST-PORT|SRC-IP-CIDR),")
+IP_RULE = re.compile(r"^(IP-CIDR|IP-CIDR6),[0-9A-Fa-f.:]+/\d{1,3}$")
+
+# Surge 规则集能用的类型，以 surge-cli --check（Surge Mac 6.9.1）实测为准。
+# Surge 不认的类型不会报错，只在加载时打一行 warning 跳过，事后很难发现。
+SURGE_TYPES = {
+    "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-WILDCARD",
+    "IP-CIDR", "IP-CIDR6", "IP-ASN", "GEOIP",
+    "PROCESS-NAME", "DEST-PORT", "SRC-PORT", "SRC-IP", "IN-PORT",
+    "PROTOCOL", "USER-AGENT", "URL-REGEX", "HOSTNAME-TYPE",
+    "AND", "OR", "NOT",
+}  # fmt: skip
+# mihomo 有而 Surge 没有（或写法不同）的类型，给出可操作的提示
+SURGE_HINT = {
+    "DST-PORT": "Surge 写作 DEST-PORT",
+    "SRC-IP-CIDR": "Surge 写作 SRC-IP",
+    "DOMAIN-REGEX": "Surge 不支持",
+    "PROCESS-PATH": "Surge 不支持",
+    "NETWORK": "Surge 写作 PROTOCOL",
+}
+
+
+def surge_line_problem(line: str) -> str | None:
+    """Surge 会跳过这行时返回原因。DOMAIN-SET 的裸域名行（无逗号）不在此列。"""
+    kind, sep, rest = line.partition(",")
+    if not sep:
+        return None
+    if kind not in SURGE_TYPES:
+        return SURGE_HINT.get(kind, "Surge 不认的规则类型")
+    value = rest.split(",", 1)[0]
+    if kind == "IP-CIDR" and ":" in value:
+        return "IPv6 须用 IP-CIDR6"
+    if kind == "IP-CIDR6" and ":" not in value:
+        return "IPv4 须用 IP-CIDR"
+    return None
+
+
+def surge_problems(lines: list[str]) -> list[str]:
+    return [f"{l}（{why}）" for l in lines if (why := surge_line_problem(l))]
+
+
 PAYLOAD_ITEM = re.compile(r"  - '[^']+'")
 
 # mihomo 三种 behavior 各自的 payload 形态。配错 behavior 时 mihomo 会逐行
@@ -59,9 +94,15 @@ def rule_lines(path: Path) -> list[str]:
 def upstream_count(f: Path, kind: str) -> int:
     """按 build.py 的口径重算上游去重后的条数。"""
     seen = set()
+    classical = f.parent.name == "classical"
     for raw in f.read_text(encoding="utf-8", errors="ignore").splitlines():
         line = raw.split("#", 1)[0].strip()
         if not line:
+            continue
+        if classical:
+            # DOMAIN-REGEX Surge 不支持，build.py 跳过并在文件头注明
+            if not line.startswith("DOMAIN-REGEX,"):
+                seen.add(line)
             continue
         if kind == "domain":
             key = (
@@ -92,10 +133,10 @@ def check_custom(dist: Path, require_mrs: bool = False) -> tuple[list[str], int]
 
     for f in sorted((cdir / "surge").glob("*.conf")):
         lines = rule_lines(f)
-        bad = [l for l in lines if not SURGE_CLASSICAL_RULE.match(l)]
+        bad = surge_problems(lines)
         if bad:
             errors.append(
-                f"custom/surge/{f.name} 语法非法 {len(bad)} 行，例: {bad[0]!r}"
+                f"custom/surge/{f.name} 有 {len(bad)} 行 Surge 会跳过，例: {bad[0]}"
             )
         if len(set(lines)) != len(lines):
             errors.append(f"custom/surge/{f.name} 有重复行")
@@ -292,15 +333,11 @@ def main() -> int:
                             f"domain 不支持的通配，会被丢弃，例: {bad[0]!r}"
                         )
                     if f.suffix in {".list", ".conf"} and (
-                        bad := [
-                            line
-                            for line in rule_lines(f)
-                            if SURGE_UNSUPPORTED.match(line)
-                        ]
+                        bad := surge_problems(rule_lines(f))
                     ):
                         warnings.append(
-                            f"{label}/{f.relative_to(base)} 有 {len(bad)} 条 Surge "
-                            f"不认的规则类型，Surge 引用时会跳过，例: {bad[0]!r}"
+                            f"{label}/{f.relative_to(base)} 有 {len(bad)} 行 Surge "
+                            f"引用时会跳过，例: {bad[0]}"
                         )
                 # 上游有但我们漏掉的（排除项除外）
                 for up in sorted(src_dir.rglob("*")):
@@ -338,6 +375,11 @@ def main() -> int:
                     errors.append(
                         f"{label}/surge/{f.name} 语法非法 {len(bad)} 行，例: {bad[0]!r}"
                     )
+                if bad := surge_problems(lines):
+                    errors.append(
+                        f"{label}/surge/{f.name} 有 {len(bad)} 行 Surge 会跳过，"
+                        f"例: {bad[0]}"
+                    )
                 if len(set(lines)) != len(lines):
                     errors.append(
                         f"{label}/surge/{f.name} 有 "
@@ -345,6 +387,10 @@ def main() -> int:
                     )
 
                 up = src_dir / f"{f.name[: -len('.conf')]}.list"
+                # 域名侧由 build.py 优先从 classical/ 转换，条数也按它算
+                classical = src_dir / "classical" / up.name
+                if ds["kind"] == "domain" and classical.is_file():
+                    up = classical
                 if up.is_file():
                     want = upstream_count(up, ds["kind"])
                     if want != len(lines):

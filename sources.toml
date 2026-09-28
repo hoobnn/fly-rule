@@ -63,8 +63,9 @@ path = "Clash"
 kind = "mirror"
 mirror_tree = true
 
-# Aethersailor 的 rule/ 已是 Surge / mihomo 通用的 classical 语法
-# （域名与 IP 混在同一文件），同样无需转换。
+# Aethersailor 的 rule/ 是上游为 OpenClash 生成的成品，纯镜像不转换。
+# .list 按 mihomo 写法（DST-PORT、IPv6 也写 IP-CIDR），Surge 引用时个别行会被
+# 跳过；verify.py 会把这类行列为告警。
 [[sources]]
 key = "aethersailor"
 repo = "https://github.com/Aethersailor/Custom_OpenClash_Rules.git"
