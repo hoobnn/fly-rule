@@ -12,11 +12,14 @@
 behavior 配错时 mihomo 只会静默丢表，不报错，事后很难发现。
 mrs 产物同时校验存在性与魔数：引用方按 format: mrs 拉到 404 或坏文件时，
 mihomo 会整表加载失败。
+镜像里 domain 形态的 yaml 若含 mihomo 不支持的通配（如上游把 DOMAIN-KEYWORD
+写成 `*kw*`），只告警不拦截：镜像必须与上游逐字节一致，修不了，但要让人看见。
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 import tomllib
@@ -155,6 +158,29 @@ def check_mrs(mihomo_dir: Path, require: bool = False) -> list[str]:
     return errors
 
 
+def unsupported_domain_items(f: Path) -> list[str]:
+    """镜像 yaml 若是 domain 形态，找出 mihomo 会当非法域名丢弃的条目。
+
+    domain behavior 里 `*` 只能占整个标签（`*.a.com`、`a.*`），标签内部的
+    `*`（`*kw*`、`foo*.a.com`）mihomo 只打一行 warning 就跳过。classical 与
+    ipcidr 形态的文件不在此列。
+    """
+    items = [
+        line.strip()[2:].strip().strip("'\"")
+        for line in f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        if line.strip().startswith("- ")
+    ]
+    if not items or any(
+        PAYLOAD_CLASSICAL.match(v) or PAYLOAD_IPCIDR.fullmatch(v) for v in items
+    ):
+        return []
+    return [
+        v
+        for v in items
+        if any("*" in label and label != "*" for label in v.lstrip("+.").split("."))
+    ]
+
+
 def check_behavior(f: Path, items: list[str]) -> list[str]:
     """payload 形态必须与文件名隐含的 behavior 一致。
 
@@ -232,6 +258,7 @@ def main() -> int:
 
     cfg = tomllib.loads((ROOT / "sources.toml").read_text(encoding="utf-8"))
     errors: list[str] = []
+    warnings: list[str] = []
     total_rules = total_files = mirrored = 0
 
     for src in cfg.get("sources", []):
@@ -255,6 +282,11 @@ def main() -> int:
                         errors.append(f"{label}/{f.relative_to(base)} 上游已无此文件")
                     elif f.read_bytes() != up.read_bytes():
                         errors.append(f"{label}/{f.relative_to(base)} 与上游不一致")
+                    if f.suffix == ".yaml" and (bad := unsupported_domain_items(f)):
+                        warnings.append(
+                            f"{label}/{f.relative_to(base)} 有 {len(bad)} 条 mihomo "
+                            f"domain 不支持的通配，会被丢弃，例: {bad[0]!r}"
+                        )
                 # 上游有但我们漏掉的（排除项除外）
                 for up in sorted(src_dir.rglob("*")):
                     if not up.is_file():
@@ -332,6 +364,11 @@ def main() -> int:
     custom_errors, custom_rules = check_custom(dist, a.require_mrs)
     errors += custom_errors
     total_rules += custom_rules
+
+    # GitHub Actions 的 ::warning:: 会出现在运行摘要里，比混在日志中显眼
+    prefix = "::warning::" if os.environ.get("GITHUB_ACTIONS") else "警告: "
+    for w in warnings:
+        print(f"{prefix}{w}", file=sys.stderr)
 
     if errors:
         print("校验失败:", file=sys.stderr)
