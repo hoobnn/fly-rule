@@ -8,6 +8,7 @@ on:
     paths:
       - "custom/**.list"
       - "scripts/custom.py"
+      - "scripts/surge.py"
       - "scripts/mrs.py"
       - "scripts/verify.py"
       - "scripts/loadcheck.py"

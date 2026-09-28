@@ -12,7 +12,7 @@
 behavior 配错时 mihomo 只会静默丢表，不报错，事后很难发现。
 mrs 产物同时校验存在性与魔数：引用方按 format: mrs 拉到 404 或坏文件时，
 mihomo 会整表加载失败。
-Surge 侧产物逐行过 surge_line_problem()：类型白名单与 IP-CIDR / IP-CIDR6 的
+Surge 侧产物逐行过 surge.line_problem()：类型白名单与 IP-CIDR / IP-CIDR6 的
 取值以 surge-cli --check 实测为准（scripts/surgecheck.py 可在装了 Surge 的
 Mac 上用真实解析器复核）。自产文件命中即失败。
 镜像里 domain 形态的 yaml 若含 mihomo 不支持的通配（如上游把 DOMAIN-KEYWORD
@@ -29,6 +29,9 @@ import sys
 import tomllib
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import surge
+
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / ".work"
 
@@ -36,44 +39,6 @@ DOMAIN_RULE = re.compile(
     r"^(DOMAIN|DOMAIN-SUFFIX),[A-Za-z0-9.*_-]+$|^DOMAIN-KEYWORD,[^,\s]+$"
 )
 IP_RULE = re.compile(r"^(IP-CIDR|IP-CIDR6),[0-9A-Fa-f.:]+/\d{1,3}$")
-
-# Surge 规则集能用的类型，以 surge-cli --check（Surge Mac 6.9.1）实测为准。
-# Surge 不认的类型不会报错，只在加载时打一行 warning 跳过，事后很难发现。
-SURGE_TYPES = {
-    "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-WILDCARD",
-    "IP-CIDR", "IP-CIDR6", "IP-ASN", "GEOIP",
-    "PROCESS-NAME", "DEST-PORT", "SRC-PORT", "SRC-IP", "IN-PORT",
-    "PROTOCOL", "USER-AGENT", "URL-REGEX", "HOSTNAME-TYPE",
-    "AND", "OR", "NOT",
-}  # fmt: skip
-# mihomo 有而 Surge 没有（或写法不同）的类型，给出可操作的提示
-SURGE_HINT = {
-    "DST-PORT": "Surge 写作 DEST-PORT",
-    "SRC-IP-CIDR": "Surge 写作 SRC-IP",
-    "DOMAIN-REGEX": "Surge 不支持",
-    "PROCESS-PATH": "Surge 不支持",
-    "NETWORK": "Surge 写作 PROTOCOL",
-}
-
-
-def surge_line_problem(line: str) -> str | None:
-    """Surge 会跳过这行时返回原因。DOMAIN-SET 的裸域名行（无逗号）不在此列。"""
-    kind, sep, rest = line.partition(",")
-    if not sep:
-        return None
-    if kind not in SURGE_TYPES:
-        return SURGE_HINT.get(kind, "Surge 不认的规则类型")
-    value = rest.split(",", 1)[0]
-    if kind == "IP-CIDR" and ":" in value:
-        return "IPv6 须用 IP-CIDR6"
-    if kind == "IP-CIDR6" and ":" not in value:
-        return "IPv4 须用 IP-CIDR"
-    return None
-
-
-def surge_problems(lines: list[str]) -> list[str]:
-    return [f"{l}（{why}）" for l in lines if (why := surge_line_problem(l))]
-
 
 PAYLOAD_ITEM = re.compile(r"  - '[^']+'")
 
@@ -133,7 +98,7 @@ def check_custom(dist: Path, require_mrs: bool = False) -> tuple[list[str], int]
 
     for f in sorted((cdir / "surge").glob("*.conf")):
         lines = rule_lines(f)
-        bad = surge_problems(lines)
+        bad = surge.problems(lines)
         if bad:
             errors.append(
                 f"custom/surge/{f.name} 有 {len(bad)} 行 Surge 会跳过，例: {bad[0]}"
@@ -226,6 +191,40 @@ def unsupported_domain_items(f: Path) -> list[str]:
     ]
 
 
+def check_surge_out(src_dir: Path, out_dir: Path, exclude: list | None) -> list[str]:
+    """镜像的 Surge 专用版：每个上游 .list 都有、Surge 不会跳过、条数无损。"""
+    errors: list[str] = []
+    skip = set(exclude or [])
+    label = out_dir.relative_to(out_dir.parent.parent).as_posix()
+    for up in sorted(src_dir.rglob("*.list")):
+        rel = up.relative_to(src_dir)
+        if skip and rel.parts and rel.parts[0] in skip:
+            continue
+        f = out_dir / rel
+        if not f.is_file():
+            errors.append(f"{label}/{rel} 缺失")
+            continue
+        lines = rule_lines(f)
+        if bad := surge.problems(lines):
+            errors.append(f"{label}/{rel} 有 {len(bad)} 行 Surge 会跳过，例: {bad[0]}")
+        want = [
+            c
+            for line in rule_lines(up)
+            if (c := surge.to_surge(line.strip())) is not None
+        ]
+        if lines != want:
+            diff = next(
+                (
+                    f"应为 {w!r}，实为 {g!r}"
+                    for w, g in zip(want, lines, strict=False)
+                    if w != g
+                ),
+                f"应 {len(want)} 行，实 {len(lines)} 行",
+            )
+            errors.append(f"{label}/{rel} 与上游转换结果不符：{diff}")
+    return errors
+
+
 def check_behavior(f: Path, items: list[str]) -> list[str]:
     """payload 形态必须与文件名隐含的 behavior 一致。
 
@@ -292,11 +291,11 @@ def main() -> int:
             for e in errors[:40]:
                 print(f"  - {e}", file=sys.stderr)
             return 1
-        surge = len(list((cdir / "surge").glob("*.conf")))
+        n_surge = len(list((cdir / "surge").glob("*.conf")))
         mihomo = len(list((cdir / "mihomo").glob("*.yaml")))
         mrs = len(list((cdir / "mihomo").glob("*.mrs")))
         print(
-            f"校验通过：自定义规则 {surge + mihomo + mrs} 个文件 "
+            f"校验通过：自定义规则 {n_surge + mihomo + mrs} 个文件 "
             f"/ {total_rules} 条规则（含 {mrs} 个 mrs）"
         )
         return 0
@@ -332,13 +331,20 @@ def main() -> int:
                             f"{label}/{f.relative_to(base)} 有 {len(bad)} 条 mihomo "
                             f"domain 不支持的通配，会被丢弃，例: {bad[0]!r}"
                         )
-                    if f.suffix in {".list", ".conf"} and (
-                        bad := surge_problems(rule_lines(f))
+                    # 有 Surge 专用版的数据集，Surge 该引用那份，这里不再告警
+                    if (
+                        f.suffix in {".list", ".conf"}
+                        and not ds.get("surge_out")
+                        and (bad := surge.problems(rule_lines(f)))
                     ):
                         warnings.append(
                             f"{label}/{f.relative_to(base)} 有 {len(bad)} 行 Surge "
                             f"引用时会跳过，例: {bad[0]}"
                         )
+                if ds.get("surge_out"):
+                    errors += check_surge_out(
+                        src_dir, dist / key / ds["surge_out"], ds.get("exclude")
+                    )
                 # 上游有但我们漏掉的（排除项除外）
                 for up in sorted(src_dir.rglob("*")):
                     if not up.is_file():
@@ -352,12 +358,12 @@ def main() -> int:
 
             rx = DOMAIN_RULE if ds["kind"] == "domain" else IP_RULE
 
-            surge = base / "surge"
-            if not surge.is_dir():
+            surge_dir = base / "surge"
+            if not surge_dir.is_dir():
                 errors.append(f"{label}/surge/ 不存在")
                 continue
 
-            files = sorted(surge.glob("*.conf"))
+            files = sorted(surge_dir.glob("*.conf"))
             if not files:
                 errors.append(f"{label}/surge/ 为空")
                 continue
@@ -375,7 +381,7 @@ def main() -> int:
                     errors.append(
                         f"{label}/surge/{f.name} 语法非法 {len(bad)} 行，例: {bad[0]!r}"
                     )
-                if bad := surge_problems(lines):
+                if bad := surge.problems(lines):
                     errors.append(
                         f"{label}/surge/{f.name} 有 {len(bad)} 行 Surge 会跳过，"
                         f"例: {bad[0]}"

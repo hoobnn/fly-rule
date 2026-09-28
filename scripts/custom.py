@@ -49,6 +49,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import surge
+
 ROOT = Path(__file__).resolve().parent.parent
 
 # classical 支持的规则类型。域名类会被派生进 -domain，IP 类进 -ip，
@@ -57,8 +60,6 @@ DOMAIN_TYPES = {"DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-WILDCARD"}
 IP_TYPES = {"IP-CIDR", "IP-CIDR6", "IP-ASN"}
 OTHER_TYPES = {"PROCESS-NAME", "DST-PORT", "SRC-PORT", "SRC-IP-CIDR"}
 ALL_TYPES = DOMAIN_TYPES | IP_TYPES | OTHER_TYPES
-# 源文件用 mihomo 的写法；Surge 同义规则的类型名不同，照抄会被 Surge 当非法行跳过
-SURGE_TYPE = {"DST-PORT": "DEST-PORT", "SRC-IP-CIDR": "SRC-IP"}
 
 DOMAIN_VALUE = re.compile(r"^[A-Za-z0-9*]([A-Za-z0-9*._-]*)$")
 V4 = re.compile(r"^\d{1,3}(\.\d{1,3}){3}/\d{1,2}$")
@@ -66,7 +67,8 @@ V6 = re.compile(r"^[0-9A-Fa-f:]+/\d{1,3}$")
 
 
 def surge_line(k: str, v: str) -> str:
-    return f"{SURGE_TYPE.get(k, k)},{v}"
+    # 源文件用 mihomo 的写法；Surge 同义规则的类型名不同，照抄会被 Surge 跳过
+    return f"{surge.RENAME.get(k, k)},{v}"
 
 
 def parse(path: Path) -> tuple[list[tuple[str, str]], list[str]]:

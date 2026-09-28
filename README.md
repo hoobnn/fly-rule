@@ -9,7 +9,7 @@ MetaCubeX 不出 Surge 格式，由本项目转换。
 | --- | --- | --- |
 | [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | GPL-3.0 | 转换 + 镜像 |
 | [SukkaLab/ruleset.skk.moe](https://github.com/SukkaLab/ruleset.skk.moe) | AGPL-3.0 | 纯镜像 |
-| [Aethersailor/Custom_OpenClash_Rules](https://github.com/Aethersailor/Custom_OpenClash_Rules) | CC-BY-SA-4.0 | 纯镜像 |
+| [Aethersailor/Custom_OpenClash_Rules](https://github.com/Aethersailor/Custom_OpenClash_Rules) | CC-BY-SA-4.0 | 镜像 + Surge 转换 |
 
 ## 产物
 
@@ -20,7 +20,8 @@ metacubex/geosite/{surge,mihomo,mihomo-classical}/   1892 类
 metacubex/geoip/{surge,mihomo}/                       260 类
 metacubex/geo-lite-geosite/, geo-lite-geoip/           35 类
 sukkaw/{surge,mihomo}/{domainset,non_ip,ip}/
-aethersailor/rule/
+aethersailor/rule/                                    上游原样（mihomo 写法）
+aethersailor/rule-surge/                              .list 的 Surge 专用版
 custom/{surge,mihomo}/
 ```
 
@@ -82,6 +83,7 @@ Surge 侧会不会跳过（类型白名单按 `surge-cli --check` 实测）；
 即判为被静默丢弃；
 `guard.py` 与上次发布比对，类别消失或条数暴跌超 50% 就拦下发布。CI 里都是硬门禁。
 镜像与上游逐字节一致、修不了，其中的问题只告警，出现在 CI 运行摘要里。
+Aethersailor 的 `.list` 按 mihomo 写法，Surge 请引用 `aethersailor/rule-surge/` 下的同名文件。
 
 两端都有对方表达不了的规则，转换时的取舍：
 
@@ -89,7 +91,8 @@ Surge 侧会不会跳过（类型白名单按 `surge-cli --check` 实测）；
 | --- | --- | --- |
 | `DOMAIN-KEYWORD` | 保留 | 表达不了，排除 |
 | `DOMAIN-REGEX`（geosite 的 regexp） | 不支持，跳过并在文件头注明 | 上游已排除 |
-| `DST-PORT` / `SRC-IP-CIDR`（custom） | 改写为 `DEST-PORT` / `SRC-IP` | classical 原样 |
+| `DST-PORT` / `SRC-IP-CIDR`（custom、Aethersailor） | 改写为 `DEST-PORT` / `SRC-IP` | classical 原样 |
+| IPv6 写成 `IP-CIDR`（Aethersailor） | 改写为 `IP-CIDR6` | 原样（mihomo 两种都接受） |
 
 `surgecheck.py` 只能在装了 Surge 的 Mac 上跑，改了转换逻辑或 Surge 升级后
 本地跑一次，确认白名单没有漂移。

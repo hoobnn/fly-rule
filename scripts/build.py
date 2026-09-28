@@ -41,6 +41,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import custom
+import surge
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / ".work"
@@ -188,6 +189,46 @@ def convert_ip(text: str) -> tuple[list[str], list[str]]:
     return rules, bad
 
 
+def surge_tree(
+    src_dir: Path, out_dir: Path, header: str, exclude: list[str] | None = None
+) -> dict:
+    """镜像里的 classical .list 转一份 Surge 专用版，保留注释与目录结构。
+
+    上游 .list 按 mihomo 写法（DST-PORT、IPv6 也写 IP-CIDR），Surge 加载时会
+    静默跳过这些行。镜像本身必须与上游逐字节一致，所以另出一份改写后的。
+    """
+    skip = set(exclude or [])
+    stats = {"files": 0, "rewritten": 0, "dropped": []}
+    for f in sorted(src_dir.rglob("*.list")):
+        rel = f.relative_to(src_dir)
+        if skip and rel.parts and rel.parts[0] in skip:
+            continue
+        out, rewritten, dropped = [], 0, []
+        for raw in f.read_text(encoding="utf-8", errors="ignore").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                out.append(raw)
+                continue
+            conv = surge.to_surge(line)
+            if conv is None:
+                dropped.append(line)
+                continue
+            rewritten += conv != line
+            out.append(conv)
+        head = header + f"# 上游: {rel.as_posix()}\n"
+        if rewritten:
+            head += f"# 改写为 Surge 写法 {rewritten} 行（DST-PORT -> DEST-PORT 等）\n"
+        if dropped:
+            head += f"# 跳过 Surge 表达不了的 {len(dropped)} 行，例: {dropped[0]!r}\n"
+        dest = out_dir / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(head + "\n".join(out) + "\n", encoding="utf-8")
+        stats["files"] += 1
+        stats["rewritten"] += rewritten
+        stats["dropped"] += [f"{rel.as_posix()}: {d}" for d in dropped]
+    return stats
+
+
 def mirror_tree(src_dir: Path, out_dir: Path, exclude: list[str] | None = None) -> int:
     """整目录原样镜像，保留子目录结构。exclude 里的顶层子目录会跳过。"""
     skip = set(exclude or [])
@@ -230,6 +271,21 @@ def build_dataset(src: dict, ds: dict, rev: str, dist: Path, no_mirror: bool) ->
         base.mkdir(parents=True, exist_ok=True)
         n = mirror_tree(src_dir, base, ds.get("exclude"))
         print(f"  {ds['name']:<18} 镜像 {n} 个文件")
+        if ds.get("surge_out"):
+            sout = dist / src["key"] / ds["surge_out"]
+            st = surge_tree(
+                src_dir,
+                sout,
+                f"# 由 fly-rule 自 {src['key']}@{rev} 转换（Surge 专用），"
+                "请勿手工编辑\n",
+                ds.get("exclude"),
+            )
+            print(
+                f"  {ds['surge_out']:<18} Surge 转换 {st['files']} 个文件，"
+                f"改写 {st['rewritten']} 行，跳过 {len(st['dropped'])} 行"
+            )
+            for d in st["dropped"][:10]:
+                print(f"    - 跳过 {d}")
         return {
             "dataset": ds["name"],
             "path": ds["path"],

@@ -63,9 +63,9 @@ path = "Clash"
 kind = "mirror"
 mirror_tree = true
 
-# Aethersailor 的 rule/ 是上游为 OpenClash 生成的成品，纯镜像不转换。
-# .list 按 mihomo 写法（DST-PORT、IPv6 也写 IP-CIDR），Surge 引用时个别行会被
-# 跳过；verify.py 会把这类行列为告警。
+# Aethersailor 的 rule/ 是上游为 OpenClash 生成的成品，原样镜像。
+# .list 按 mihomo 写法（DST-PORT、IPv6 也写 IP-CIDR），Surge 加载时会静默跳过
+# 这些行，所以另出一份 Surge 专用版到 surge_out（rule-surge/），Surge 引用那份。
 [[sources]]
 key = "aethersailor"
 repo = "https://github.com/Aethersailor/Custom_OpenClash_Rules.git"
@@ -78,3 +78,4 @@ kind = "mirror"
 mirror_tree = true
 # archived 是作者已废弃的规则，不转发
 exclude = ["archived"]
+surge_out = "rule-surge"

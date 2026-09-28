@@ -9,7 +9,8 @@ surge_line_problem() 是按 surge-cli --check 实测结果写的白名单，Surg
     python3 scripts/surgecheck.py
 
 CI 跑不了（Surge 只有 macOS 应用），改了转换逻辑或 Surge 升级后在本地跑一次。
-自产文件（metacubex/*/surge、custom/surge）有问题返回非零；镜像只列出来。
+自产文件（metacubex/*/surge、custom/surge、aethersailor/rule-surge）有问题
+返回非零；镜像只列出来。
 """
 
 from __future__ import annotations
@@ -36,7 +37,8 @@ def surge_files() -> tuple[list[Path], list[Path]]:
         *DIST.glob("custom/surge/*.conf"),
         *DIST.glob("sukkaw/surge/non_ip/*.conf"),
         *DIST.glob("sukkaw/surge/ip/*.conf"),
-        *DIST.glob("aethersailor/rule/**/*.list"),
+        # Aethersailor 的镜像 .list 按 mihomo 写法，Surge 引用的是转换后的 rule-surge/
+        *DIST.glob("aethersailor/rule-surge/**/*.list"),
     ]
     domainset = list(DIST.glob("sukkaw/surge/domainset/*.conf"))
     return sorted(rule), sorted(domainset)
@@ -111,7 +113,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         bad = check(rules, Path(tmp) / "check.conf")
 
-    own = ("metacubex/", "custom/")
+    own = ("metacubex/", "custom/", "aethersailor/rule-surge/")
     failed = False
     for line in bad:
         files = sorted(src[line])
