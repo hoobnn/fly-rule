@@ -1,0 +1,15 @@
+# 每周检查一次工作流里 GitHub Actions 的新版本，所有升级合并成一个 PR。
+# ruff-action 只发精确版本、没有浮动大版本标签，靠它提醒升级。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "👷 ci"
+      include: scope
