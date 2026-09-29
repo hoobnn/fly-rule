@@ -1,137 +1,307 @@
-# fly-rule
+# fly-rule — Surge & mihomo (Clash Meta) rule sets
 
-聚合多个上游的分流规则到 `release` 分支，Surge 与 mihomo 都能直接引用。
-MetaCubeX 不出 Surge 格式，由本项目转换。
+**MetaCubeX meta-rules-dat geosite / geoip, SukkaW's ruleset.skk.moe and Aethersailor's Custom_OpenClash_Rules, aggregated into one `release` branch you can reference directly from Surge and mihomo.**
 
-## 上游
+[![build](https://img.shields.io/github/actions/workflow/status/hoobnn/fly-rule/build.yml?branch=main&style=flat-square&label=build)](https://github.com/hoobnn/fly-rule/actions/workflows/build.yml)
+[![release](https://img.shields.io/github/last-commit/hoobnn/fly-rule/release?style=flat-square&label=release)](https://github.com/hoobnn/fly-rule/tree/release)
+[![Surge](https://img.shields.io/badge/Surge-RULE--SET%20%2F%20DOMAIN--SET-555?style=flat-square)](#surge)
+[![mihomo](https://img.shields.io/badge/mihomo-rule--providers%20%C2%B7%20mrs-555?style=flat-square)](#mihomo)
+[![license](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](LICENSE)
 
-| 上游 | 协议 | 处理 |
-| --- | --- | --- |
-| [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | GPL-3.0 | 转换 + 镜像 |
-| [SukkaLab/ruleset.skk.moe](https://github.com/SukkaLab/ruleset.skk.moe) | AGPL-3.0 | 纯镜像 |
-| [Aethersailor/Custom_OpenClash_Rules](https://github.com/Aethersailor/Custom_OpenClash_Rules) | CC-BY-SA-4.0 | 镜像 + 两端各出一份适配版 |
+English · [简体中文](README.zh.md)
 
-## 产物
+fly-rule aggregates proxy routing rules (分流规则) from several upstreams into a
+`release` branch that both Surge and mihomo can reference directly.
+MetaCubeX does not publish a Surge format, so this project converts it: every
+meta-rules-dat geosite / geoip category is available as a Surge `RULE-SET`, and
+the mihomo side ships `.mrs`, `.yaml` and `.list`. Upstreams are synced daily,
+and every publish passes syntax, rule-count and real-load gates.
 
-都在 `release` 分支，路径是 `<上游>/<数据集>/<格式>/`：
+## Use cases
+
+- You want MetaCubeX **geosite / geoip** categories (`cn`, `geolocation-!cn`, `openai`, `google`, …) in **Surge**, but upstream only ships mihomo / sing-box formats.
+- You use **mihomo (Clash Meta)** `rule-providers` and want MetaCubeX, SukkaW and Aethersailor rules from one place with consistent URLs.
+- You **share one routing setup between Surge and mihomo**, and each side needs a version it actually loads (rule type renames and `DOMAIN-KEYWORD` trade-offs are handled).
+- You maintain **custom rules**: write one classical source file and get eight Surge and mihomo outputs (including mrs) generated for you.
+
+## Quick start
+
+Everything lives on the `release` branch. The raw URL prefix is:
 
 ```text
-metacubex/geosite/{surge,mihomo,mihomo-classical}/   1892 类
-metacubex/geoip/{surge,mihomo}/                       260 类
-metacubex/geo-lite-geosite/, geo-lite-geoip/           35 类
+https://raw.githubusercontent.com/hoobnn/fly-rule/release/
+```
+
+Replace `Proxy` below with your own policy group. **All domain rules must come before all IP rules** (see [Outputs](#outputs)).
+
+### Surge
+
+```ini
+[Rule]
+# --- domain rules ---
+DOMAIN-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/sukkaw/surge/domainset/reject.conf,REJECT
+RULE-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/surge/openai.conf,Proxy
+RULE-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/surge/google.conf,Proxy
+RULE-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/surge/cn.conf,DIRECT
+RULE-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/surge/geolocation-!cn.conf,Proxy
+# --- IP rules (after every domain rule, with no-resolve) ---
+RULE-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geoip/surge/telegram.conf,Proxy,no-resolve
+RULE-SET,https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geoip/surge/cn.conf,DIRECT,no-resolve
+FINAL,Proxy
+```
+
+SukkaW's `domainset/` files are referenced with `DOMAIN-SET`; `non_ip/` and `ip/` with `RULE-SET` (add `no-resolve` to `ip/`).
+
+### mihomo
+
+```yaml
+rule-providers:
+  reject:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/hoobnn/fly-rule/release/sukkaw/mihomo/domainset/reject.txt
+  openai:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/mihomo/openai.mrs
+  cn:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/mihomo/cn.mrs
+  geolocation-not-cn:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: "https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geosite/mihomo/geolocation-!cn.mrs"
+  telegram-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    url: https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geoip/mihomo/telegram.mrs
+  cn-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    url: https://raw.githubusercontent.com/hoobnn/fly-rule/release/metacubex/geoip/mihomo/cn.mrs
+
+rules:
+  - RULE-SET,reject,REJECT
+  - RULE-SET,openai,Proxy
+  - RULE-SET,cn,DIRECT
+  - RULE-SET,geolocation-not-cn,Proxy
+  - RULE-SET,telegram-ip,Proxy,no-resolve
+  - RULE-SET,cn-ip,DIRECT,no-resolve
+  - MATCH,Proxy
+```
+
+`format` must follow the file extension and `behavior` must match the directory, otherwise mihomo fails to load the provider:
+
+| Directory | Files | `behavior` | `format` |
+| --- | --- | --- | --- |
+| `metacubex/geosite/mihomo/` | `.mrs` / `.yaml` / `.list` | `domain` | `mrs` / `yaml` / `text` |
+| `metacubex/geoip/mihomo/` | `.mrs` / `.yaml` / `.list` | `ipcidr` | `mrs` / `yaml` / `text` |
+| `metacubex/geosite/mihomo-classical/` | `.yaml` / `.list` | `classical` | `yaml` / `text` |
+| `sukkaw/mihomo/domainset/` | `.txt` | `domain` | `text` |
+| `sukkaw/mihomo/non_ip/` | `.txt` | `classical` | `text` |
+| `sukkaw/mihomo/ip/` | `.txt` | `ipcidr` | `text` |
+| `aethersailor/rule-mihomo/` | `*_Domain.mrs` / `*_IP.mrs` | `domain` / `ipcidr` | `mrs` |
+
+For `custom/`, see [`custom/README.md`](custom/README.md) (Chinese).
+
+## Upstreams
+
+| Upstream | License | Handling |
+| --- | --- | --- |
+| [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) | GPL-3.0 | converted + mirrored |
+| [SukkaLab/ruleset.skk.moe](https://github.com/SukkaLab/ruleset.skk.moe) | AGPL-3.0 | mirrored as-is |
+| [Aethersailor/Custom_OpenClash_Rules](https://github.com/Aethersailor/Custom_OpenClash_Rules) | CC-BY-SA-4.0 | mirrored + an adapted copy for each client |
+
+## Outputs
+
+All on the `release` branch, laid out as `<upstream>/<dataset>/<format>/`:
+
+```text
+metacubex/geosite/{surge,mihomo,mihomo-classical}/   1892 categories
+metacubex/geoip/{surge,mihomo}/                       260 categories
+metacubex/geo-lite-geosite/, geo-lite-geoip/           35 categories
 sukkaw/{surge,mihomo}/{domainset,non_ip,ip}/
-aethersailor/rule/                                    上游原样，只作对照
-aethersailor/rule-surge/                              .list 的 Surge 专用版
-aethersailor/rule-mihomo/                             mihomo 专用版（同名文件）
+aethersailor/rule/                                    upstream as-is, reference only
+aethersailor/rule-surge/                              Surge-specific build of the .list files
+aethersailor/rule-mihomo/                             mihomo-specific build (same file names)
 custom/{surge,mihomo}/
 ```
 
-`surge/` 给 Surge，`mihomo/` 给 mihomo（geosite 用 `behavior: domain`，
-geoip 用 `ipcidr`，`mihomo-classical/` 用 `classical`）。
+`surge/` is for Surge and `mihomo/` for mihomo (geosite uses `behavior: domain`,
+geoip uses `ipcidr`, `mihomo-classical/` uses `classical`).
 
-**顺序**：所有域名规则必须放在所有 IP 规则之前，否则匹配 IP 规则时会触发
-DNS 解析，失去 DNS 污染保护。
+**Ordering**: all domain rules must come before all IP rules. Otherwise
+matching an IP rule triggers DNS resolution and you lose protection against DNS
+poisoning.
 
-属性变体直接可用，共 342 个：`youtube@ads.conf`、`adobe@cn.conf`、
-`airchina@!cn.conf`。`@` 和 `!` 在 raw URL 里无需转义。
+Attribute variants work out of the box, 342 in total: `youtube@ads.conf`,
+`adobe@cn.conf`, `airchina@!cn.conf`. `@` and `!` need no escaping in raw URLs.
 
-## 自定义规则
+## Custom rules
 
-在 `custom/` 写一份 classical 源文件（域名与 IP 混写），构建时自动派生
-Surge 三份（混写 / 仅域名 / 仅 IP）与 mihomo 五份（classical 一份，domain 与
-ipcidr 各含 `.yaml` 和预编译 `.mrs`），共八份。
-详见 [`custom/README.md`](custom/README.md)。
+Write one classical source file in `custom/` (domains and IPs mixed). The build
+derives three Surge files (mixed / domain-only / IP-only) and five mihomo files
+(one classical, plus `.yaml` and precompiled `.mrs` for both domain and
+ipcidr) — eight in total. See [`custom/README.md`](custom/README.md) (Chinese).
 
-mihomo 侧推荐用 `.mrs`：预编译、加载快、文件小。**mrs 只支持 `domain` 与
-`ipcidr`，不支持 `classical`**（后者含 `PROCESS-NAME` 这类无法编译的规则），
-所以全部引用 mrs 也就意味着配置里不会出现 classical。代价是 `DOMAIN-KEYWORD`
-在 mihomo 的 domain 侧无法表达，会被排除出 `-domain` 产物。
+On mihomo, `.mrs` is recommended: precompiled, fast to load, small. **mrs only
+supports `domain` and `ipcidr`, not `classical`** (classical can contain rules
+like `PROCESS-NAME` that cannot be compiled), so referencing only mrs means no
+classical in your config. The trade-off is that `DOMAIN-KEYWORD` cannot be
+expressed on mihomo's domain side and is excluded from the `-domain` outputs.
 
-改动 `custom/` 会触发单独的 CI（`custom.yml`），只重建自定义规则并就地替换
-`release` 里的 `custom/`，不拉上游，约数秒可用，不必等每日构建。
+Changes under `custom/` trigger a separate CI workflow (`custom.yml`) that
+rebuilds only the custom rules and replaces `custom/` on `release` in place,
+without pulling upstreams. They are available within seconds; no need to wait
+for the daily build.
 
-## 构建
+## Build
 
 ```bash
-python3 scripts/build.py     # 同步所有上游（--only <key> 只构建一个，--offline 不联网）
-python3 scripts/custom.py    # 只重建自定义规则
-python3 scripts/mrs.py       # 把 custom 的 domain/ipcidr 产物编译成 mrs（需 mihomo）
-python3 scripts/verify.py    # 语法 / 重复 / 无损门禁（--only-custom 只查 custom/）
-python3 scripts/loadcheck.py # 用 mihomo 实际加载，核对条数（需 mihomo）
-python3 scripts/surgecheck.py  # 用 Surge 解析器复核（仅限装了 Surge 的 Mac）
+python3 scripts/build.py     # sync all upstreams (--only <key> for one, --offline for no network)
+python3 scripts/custom.py    # rebuild custom rules only
+python3 scripts/mrs.py       # compile custom domain/ipcidr outputs to mrs (needs mihomo)
+python3 scripts/verify.py    # syntax / duplicate / lossless gate (--only-custom checks custom/ only)
+python3 scripts/loadcheck.py # load with mihomo and compare rule counts (needs mihomo)
+python3 scripts/surgecheck.py  # re-check with Surge's parser (Macs with Surge only)
 python3 scripts/guard.py --repo <user>/fly-rule
 pnpm lint                    # ruff + markdownlint
 ```
 
-全量约 34 秒，无第三方 Python 依赖（mrs 需要 `mihomo` 可执行文件，CI 里按钉死
-的版本与校验和下载；本地没装时 `mrs.py` 跳过，不阻塞其余构建）。
+A full build takes about 34 seconds with no third-party Python dependencies
+(mrs needs the `mihomo` binary; CI downloads a pinned version and checksum.
+Without it locally, `mrs.py` is skipped and the rest of the build still runs).
 
-CI 有两个 workflow，都发布到 `release`：
+Two CI workflows publish to `release`:
 
-| workflow | 触发 | 做什么 |
+| Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `build.yml` | 每日 04:30 / 上游相关改动 | 重建全部产物，整棵 `release` 换新 |
-| `custom.yml` | `custom/`、`custom.py` 或 `mrs.py` 改动 | 只替换 `release` 里的 `custom/` |
+| `build.yml` | daily at 04:30 UTC+8 / upstream-related changes | rebuilds everything and replaces the whole `release` branch |
+| `custom.yml` | changes to `custom/`, `custom.py` or `mrs.py` | replaces only `custom/` on `release` |
 
-两者共用 `release-publish` 并发组，串行执行，避免同时推 `release` 互相覆盖。
-`release` 上改东西会被覆盖，要改请改 `main`。
+Both share the `release-publish` concurrency group and run serially, so they
+never overwrite each other's pushes to `release`. Anything edited on `release`
+gets overwritten — change `main` instead.
 
-## 门禁
+## Quality gates
 
-`verify.py` 逐文件核对转换产物条数与上游一致、镜像逐字节一致，并逐行检查
-Surge 侧会不会跳过（类型白名单按 `surge-cli --check` 实测）；
-`loadcheck.py` 让 mihomo 实际加载 custom 与镜像规则集，加载条数少于文件条数
-即判为被静默丢弃；
-`guard.py` 与上次发布比对，类别消失或条数暴跌超 50% 就拦下发布。CI 里都是硬门禁。
-镜像与上游逐字节一致、修不了，其中的问题只告警，出现在 CI 运行摘要里。
-Aethersailor 的镜像 `rule/` 两端都有加载不了的条目，只作对照：Surge 引用
-`aethersailor/rule-surge/`，mihomo 引用 `aethersailor/rule-mihomo/`，文件名与上游相同。
+`verify.py` checks per file that converted outputs match upstream rule counts
+and mirrors are byte-identical, and checks line by line whether Surge would
+skip anything (the type whitelist is measured with `surge-cli --check`);
+`loadcheck.py` makes mihomo actually load the custom and mirrored rule sets, and
+treats a load count below the file count as silently dropped rules;
+`guard.py` compares against the previous publish and blocks it if a category
+disappears or a rule count drops by more than 50%. All of these are hard gates
+in CI. Mirrors are byte-identical to upstream and can't be fixed here, so
+issues in them are only warnings, shown in the CI run summary.
+Aethersailor's mirrored `rule/` has entries neither client can load and is for
+reference only: Surge should reference `aethersailor/rule-surge/` and mihomo
+`aethersailor/rule-mihomo/`, with the same file names as upstream.
 
-两端都有对方表达不了的规则，转换时的取舍：
+Each client has rules the other can't express. Conversion trade-offs:
 
-| 规则 | Surge 产物 | mihomo domain / mrs |
+| Rule | Surge output | mihomo domain / mrs |
 | --- | --- | --- |
-| `DOMAIN-KEYWORD` | 保留 | 表达不了：custom 排除；Aethersailor 的 `*kw*` 按 geosite 已收录域名展开 |
-| `DOMAIN-REGEX`（geosite 的 regexp） | 不支持，跳过并在文件头注明 | 上游已排除 |
-| `DST-PORT` / `SRC-IP-CIDR`（custom、Aethersailor） | 改写为 `DEST-PORT` / `SRC-IP` | classical 原样 |
-| IPv6 写成 `IP-CIDR`（Aethersailor） | 改写为 `IP-CIDR6` | 原样（mihomo 两种都接受） |
+| `DOMAIN-KEYWORD` | kept | not expressible: excluded for custom; Aethersailor's `*kw*` expanded to domains already in geosite |
+| `DOMAIN-REGEX` (geosite regexp) | unsupported, skipped and noted in the file header | already excluded upstream |
+| `DST-PORT` / `SRC-IP-CIDR` (custom, Aethersailor) | rewritten to `DEST-PORT` / `SRC-IP` | classical unchanged |
+| IPv6 written as `IP-CIDR` (Aethersailor) | rewritten to `IP-CIDR6` | unchanged (mihomo accepts both) |
 
-`surgecheck.py` 只能在装了 Surge 的 Mac 上跑，改了转换逻辑或 Surge 升级后
-本地跑一次，确认白名单没有漂移。
+`surgecheck.py` only runs on a Mac with Surge installed. Run it locally after
+changing conversion logic or upgrading Surge to make sure the whitelist hasn't
+drifted.
 
-## 许可与法律说明
+## FAQ
 
-### 本仓库
+### Does MetaCubeX meta-rules-dat have a Surge format?
 
-**[AGPL-3.0](LICENSE)**。这不是自由选择的结果 —— 本仓库分发 AGPL-3.0 的内容
-（SukkaW），该协议具有传染性，因此整体必须以 AGPL-3.0 分发。
+Not upstream. This project converts `geo/geosite/classical/` and `geo/geoip/`
+into Surge `RULE-SET` files under `metacubex/*/surge/`, named after the upstream
+categories (`cn.conf`, `geolocation-!cn.conf`, `youtube@ads.conf`, …). Each file
+header records the upstream path, upstream commit and rule count;
+`DOMAIN-REGEX` rules, which Surge doesn't support, are skipped and counted in
+the header.
 
-各上游内容的著作权归原作者所有，本项目仅做格式转换与镜像，不主张任何权利。
-转换产物的文件头均注明来源仓库与上游 commit。
+### How often is it updated?
 
-### 各上游协议
+`build.yml` syncs all upstreams daily at 20:30 UTC (04:30 UTC+8) and skips
+publishing when nothing changed. Changes to `custom/` are published separately
+by `custom.yml` within seconds.
 
-| 上游 | 协议 | 要求 |
+### Should mihomo use `.mrs`, `.yaml` or `.list`?
+
+Prefer `.mrs`: precompiled, fast to load, small. `.yaml` and `.list` hold the
+same rules and are handy when you want to read them. For `DOMAIN-KEYWORD` and
+other non-domain / non-IP rules, use classical (`mihomo-classical/`).
+
+### Why doesn't a rule work in Surge, or why does it trigger DNS resolution?
+
+Check the order: every domain rule (`DOMAIN-SET` / geosite `RULE-SET`) must come
+before every IP rule, and IP rule sets need `no-resolve`. For Aethersailor rules
+in Surge, reference `aethersailor/rule-surge/`, not the as-is mirror
+`aethersailor/rule/`.
+
+### Can I fork it and add my own rules?
+
+Yes. Write classical source files in `custom/` (see
+[`custom/README.md`](custom/README.md)), enable Actions in your fork, and
+replace `hoobnn` in the URLs with your username. Follow the upstream licenses
+below.
+
+## License and legal notes
+
+### This repository
+
+**[AGPL-3.0](LICENSE)**. This was not a free choice — the repository
+distributes AGPL-3.0 content (SukkaW), and that license is copyleft, so the
+whole must be distributed under AGPL-3.0.
+
+Copyright in upstream content belongs to its original authors. This project only
+converts formats and mirrors, and claims no rights. Every converted file header
+records the source repository and upstream commit.
+
+### Upstream licenses
+
+| Upstream | License | Requirements |
 | --- | --- | --- |
-| MetaCubeX/meta-rules-dat | GPL-3.0 | 署名、保留协议、衍生作品同协议开源 |
-| SukkaLab/ruleset.skk.moe | AGPL-3.0 | 同上，且**通过网络提供服务也须开源** |
-| Aethersailor/Custom_OpenClash_Rules | CC-BY-SA-4.0 | 署名、相同方式共享 |
+| MetaCubeX/meta-rules-dat | GPL-3.0 | attribution, keep the license, derivatives open-sourced under the same license |
+| SukkaLab/ruleset.skk.moe | AGPL-3.0 | same as above, and **providing it as a network service also requires releasing source** |
+| Aethersailor/Custom_OpenClash_Rules | CC-BY-SA-4.0 | attribution, share-alike |
 
-例外：SukkaW 的 `sukkaw/surge/ip/china_ip.conf` 与 `sukkaw/mihomo/ip/china_ip.txt`
-按其作者声明使用 **CC BY-SA 2.0**，不适用 AGPL-3.0。
+Exception: SukkaW's `sukkaw/surge/ip/china_ip.conf` and
+`sukkaw/mihomo/ip/china_ip.txt` are licensed **CC BY-SA 2.0** per their
+author's statement, not AGPL-3.0.
 
-SukkaW 在其 README 中**明确欢迎搭建镜像**并指定从 `SukkaLab/ruleset.skk.moe`
-同步，本项目正是按此方式镜像。
+SukkaW's README **explicitly welcomes mirrors** and asks that they sync from
+`SukkaLab/ruleset.skk.moe`, which is exactly how this project mirrors it.
 
-### 使用前请注意
+### Before you use it
 
-- **不提供任何担保。** 规则可能过时、误判或导致连接异常，风险自负。作者不对任何
-  损失负责，包括但不限于网络不可用、服务被封禁、数据丢失。
-- **商业代理服务的 ToS。** 部分服务商规定，使用第三方规则文件视为自动放弃 SLA
-  与技术支持。使用前请先读你的服务条款。
-- **规则数据不含任何绕过技术。** 本项目只是「哪些域名属于哪个服务」的分类数据，
-  不主张也不指示任何流量该如何处理 —— 策略映射完全由你的配置决定。
-- **遵守当地法律。** 你所在司法管辖区可能对网络流量转发有专门规定，使用者自行
-  负责合规。
+- **No warranty.** Rules may be outdated, misclassify, or break connections; use
+  at your own risk. The author is not liable for any loss, including but not
+  limited to network outages, blocked services, or data loss.
+- **Commercial proxy provider ToS.** Some providers state that using third-party
+  rule files waives their SLA and technical support. Read your terms first.
+- **The rule data contains no circumvention technology.** This project is only
+  classification data about which domains belong to which service; it neither
+  asserts nor instructs how any traffic should be handled — policy mapping is
+  entirely up to your configuration.
+- **Follow local law.** Your jurisdiction may regulate network traffic
+  forwarding; compliance is your own responsibility.
 
-若任一上游作者认为本项目的镜像方式不妥，请提 issue，我会立即移除对应部分。
+If any upstream author considers the way this project mirrors their work
+inappropriate, please open an issue and I will remove the corresponding part
+immediately.
