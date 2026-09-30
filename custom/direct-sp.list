@@ -3,3 +3,6 @@ DOMAIN-SUFFIX,triotea.com
 
 # ebopark 国内停车服务（SukkaW IP 规则全带 no-resolve，不加会落兜底走美国出口）
 DOMAIN-SUFFIX,ebopark.com
+
+# 四川观察
+DOMAIN-SUFFIX,scgczm.com
