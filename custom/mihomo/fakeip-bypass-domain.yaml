@@ -1,0 +1,16 @@
+# fakeip-bypass-domain
+# 由 fly-rule 自 custom/fakeip-bypass.list 生成，请勿手工编辑
+# 规则数: 11
+# mihomo 引用时须写 behavior: domain，写错会整表静默丢弃
+payload:
+  - '+.msftconnecttest.com'
+  - '+.msftncsi.com'
+  - '+.pub.3gppnetwork.org'
+  - '+.srv.nintendo.net'
+  - 'ctest.cdn.nintendo.net'
+  - '+.stun.playstation.net'
+  - 'xnotify.xboxlive.com'
+  - 'xbox.*.microsoft.com'
+  - 'xbox.*.*.microsoft.com'
+  - 'stun.*.*'
+  - 'stun.*.*.*'

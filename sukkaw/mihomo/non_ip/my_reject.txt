@@ -1,0 +1,65 @@
+#########################################
+# Sukka's Ruleset - Reject (REJECT-DROP)
+# Last Updated: 2026-08-30T07:31:52.210Z
+# Size: 54
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# $content-hash-v1$:nXJIU2khrnABzCLuW4-pSlaxGz_udeYjwiizypmxZBw$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,pipi.cn
+DOMAIN-SUFFIX,ule.com
+DOMAIN-SUFFIX,adobe.io
+DOMAIN-SUFFIX,jr.mi.com
+DOMAIN-SUFFIX,cool3c.com
+DOMAIN-SUFFIX,ulecdn.com
+DOMAIN,ad.12306.cn
+DOMAIN-SUFFIX,tongdun.net
+DOMAIN-SUFFIX,look.163.com
+DOMAIN-SUFFIX,adobestats.io
+DOMAIN-SUFFIX,lmk.mipay.com
+DOMAIN-SUFFIX,mall.10010.cn
+DOMAIN,push.12306.cn
+DOMAIN-SUFFIX,api.miwifi.com
+DOMAIN,epay.10010.com
+DOMAIN-SUFFIX,httpizza.ele.me
+DOMAIN-SUFFIX,mibi.xiaomi.com
+DOMAIN-SUFFIX,microfin.ele.me
+DOMAIN,daisydiskapp.com
+DOMAIN-SUFFIX,game.meituan.com
+DOMAIN-SUFFIX,xiaomimobile.com
+DOMAIN-SUFFIX,easytomessage.com
+DOMAIN-SUFFIX,hybrid.xiaomi.com
+DOMAIN-SUFFIX,logan.sankuai.com
+DOMAIN-SUFFIX,mtvod.meituan.net
+DOMAIN-SUFFIX,unicompayment.com
+DOMAIN-SUFFIX,video.goofish.com
+DOMAIN-SUFFIX,0.0.198.in-addr.arpa
+DOMAIN-SUFFIX,contents.meituan.com
+DOMAIN,fyb-2.cdn.bcebos.com
+DOMAIN-SUFFIX,genuine.autodesk.com
+DOMAIN,mpush-api.aliyun.com
+DOMAIN-SUFFIX,jr.airstarfinance.net
+DOMAIN-SUFFIX,mtvod-ali.meituan.net
+DOMAIN-SUFFIX,newbuy.chinaunicom.cn
+DOMAIN,app-download.fliggy.com
+DOMAIN-SUFFIX,expenses-fe.meituan.com
+DOMAIN,userlocation.googleapis.com
+DOMAIN,loan-supermarket.faas.ele.me
+DOMAIN,locationhistory-pa.googleapis.com
+DOMAIN-SUFFIX,video-zb.cloudvideocdn.taobao.com
+DOMAIN,locationhistoryaggregates-pa.googleapis.com
+DOMAIN,locationhistoryplacedetails-pa.googleapis.com
+DOMAIN-KEYWORD,bahoom
+DOMAIN-KEYWORD,-flv.meituan.net
+DOMAIN-KEYWORD,-live.meituan.net
+DOMAIN-KEYWORD,-fin.meituan.com
+PROCESS-NAME,Tencent Lemon
+PROCESS-NAME,LemonMonitor
+PROCESS-NAME,LemonDaemon
+PROCESS-NAME,LemonAgent
+PROCESS-NAME,LemonService
+DST-PORT,7680
+################## EOF ##################
