@@ -10,9 +10,9 @@ Routing rules from MetaCubeX meta-rules-dat, SukkaW's ruleset.skk.moe and Aether
 
 [简体中文](README.md) · **English**
 
-I use both Surge and mihomo and wanted the same routing rules (分流规则) on
-each. MetaCubeX only publishes mihomo / sing-box formats, so I wrote this to
-convert and collect them. Every meta-rules-dat geosite / geoip category is
+MetaCubeX only publishes mihomo / sing-box formats, which Surge cannot load.
+This project converts and collects them so Surge and mihomo can share the same
+routing rules (分流规则). Every meta-rules-dat geosite / geoip category is
 available as a Surge `RULE-SET`; on the mihomo side you get `.mrs`, `.yaml` and
 `.list`. Upstreams sync once a day, and nothing is published until it passes
 syntax, rule-count and real-load checks.
@@ -157,7 +157,7 @@ derives three Surge files (mixed / domain-only / IP-only) and five mihomo files
 (one classical, plus `.yaml` and precompiled `.mrs` for both domain and
 ipcidr), eight in total. See [`custom/README.md`](custom/README.md) (Chinese).
 
-On mihomo I recommend `.mrs`: it's precompiled, loads fast and is small. mrs
+On mihomo, `.mrs` is recommended: it's precompiled, loads fast and is small. mrs
 only supports `domain` and `ipcidr`, not `classical` (classical can contain rules
 like `PROCESS-NAME` that cannot be compiled), so referencing only mrs means no
 classical in your config. The trade-off is that `DOMAIN-KEYWORD` cannot be
@@ -207,7 +207,7 @@ gets overwritten, so change `main` instead.
   disappears or a rule count drops by more than 50%.
 
 In CI these are hard checks: if one fails, nothing is published. Mirrors are
-byte-identical to upstream and I can't fix them here, so problems in mirrors
+byte-identical to upstream and cannot be fixed here, so problems in mirrors
 are only reported as warnings in the CI run summary.
 
 Aethersailor's as-is mirror `rule/` has entries neither client can load and is
@@ -305,5 +305,5 @@ SukkaW's README explicitly welcomes mirrors and asks that they sync from
   forwarding; compliance is your own responsibility.
 
 If any upstream author considers the way this project mirrors their work
-inappropriate, please open an issue and I will remove the corresponding part
-immediately.
+inappropriate, please open an issue and the corresponding part will be
+removed promptly.
