@@ -1,6 +1,6 @@
 <div align="center">
 
-# fly-rule：Surge 与 mihomo（Clash Meta）分流规则
+# fly-rule
 
 把 MetaCubeX meta-rules-dat、SukkaW（ruleset.skk.moe）和 Aethersailor 的分流规则汇总到一个 `release` 分支，Surge 和 mihomo 都能直接引用。
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-# fly-rule: Surge & mihomo (Clash Meta) rule sets
+# fly-rule
 
 Routing rules from MetaCubeX meta-rules-dat, SukkaW's ruleset.skk.moe and Aethersailor's Custom_OpenClash_Rules, collected on one `release` branch that Surge and mihomo can both reference directly.
 
