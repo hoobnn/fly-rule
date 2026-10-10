@@ -13,6 +13,11 @@ on:
       - "scripts/mrs.py"
       - ".github/workflows/custom.yml"
   workflow_dispatch:
+    inputs:
+      allow_shrink:
+        description: "上游确有大改动时放行回归检查（--allow-shrink）"
+        type: boolean
+        default: false
 
 # 与 custom.yml 共用一组：两者都推 release，并发会互相覆盖。
 # 这里不能 cancel-in-progress —— 取消正在发布的那个会让 release 半更新。
@@ -93,7 +98,7 @@ jobs:
       # 我们忠实同步上游，上游出问题会直接传导到产物。
       # 与上次发布比对，异常缩水就拦下，不让坏数据进 release。
       - name: Guard against upstream regression
-        run: python scripts/guard.py --repo "${{ github.repository }}"
+        run: python scripts/guard.py --repo "${{ github.repository }}" ${{ inputs.allow_shrink && '--allow-shrink' || '' }}
 
       # release 是孤儿分支，只存产物，每次发布都是一个新的根提交，
       # 不与 main 共享历史、也不累积历史（同 MetaCubeX 的 meta、
