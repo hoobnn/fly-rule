@@ -1,0 +1,52 @@
+#########################################
+# Sukka's Ruleset - Stream Services: Hong Kong
+# Last Updated: 2026-08-05T12:33:03.808Z
+# Size: 35
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# - Now E
+# - ViuTV
+# - myTV Super
+# - HBO Asia
+# - Bilibili International
+#
+# $content-hash-v1$:sGiaoE4fE2ITb9922S-VW14ImXdy5W-XVWFTQDKqRiU$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,viu.tv
+DOMAIN-SUFFIX,tvb.com
+DOMAIN-SUFFIX,viu.com
+DOMAIN-SUFFIX,nowe.com
+DOMAIN-SUFFIX,bilibili.tv
+DOMAIN-SUFFIX,hboasia.com
+DOMAIN-SUFFIX,viu.now.com
+DOMAIN-SUFFIX,biliintl.com
+DOMAIN-SUFFIX,hbogoasia.hk
+DOMAIN-SUFFIX,hbogoasia.id
+DOMAIN-SUFFIX,hbogoasia.ph
+DOMAIN-SUFFIX,hbogoasia.sg
+DOMAIN-SUFFIX,hbogoasia.tw
+DOMAIN-SUFFIX,hbogoasia.com
+DOMAIN-SUFFIX,mytvsuper.com
+DOMAIN-SUFFIX,psg.cdn.hgc.com.hk
+DOMAIN,hbolb.onwardsmg.com
+DOMAIN,apm-misaka.biliapi.net
+DOMAIN,players.brightcove.net
+DOMAIN,manifest.prod.boltdns.net
+DOMAIN,hbounify-prod.evergent.com
+DOMAIN,dfp6rglgjqszk.cloudfront.net
+DOMAIN,d1k2us671qcoau.cloudfront.net
+DOMAIN,d2anahhhmp1ffz.cloudfront.net
+DOMAIN,upos-bstar-mirrorakam.akamaized.net
+DOMAIN,upos-bstar1-mirrorakam.akamaized.net
+DOMAIN,44wilhpljf.execute-api.ap-southeast-1.amazonaws.com
+DOMAIN-KEYWORD,nowtv100
+DOMAIN-KEYWORD,rthklive
+PROCESS-NAME,com.viu.pad
+PROCESS-NAME,com.viu.phone
+PROCESS-NAME,com.vuclip.viu
+PROCESS-NAME,com.hktve.viutv
+PROCESS-NAME,com.bstar.intl
+################## EOF ##################
