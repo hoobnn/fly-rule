@@ -8,8 +8,11 @@
     // 80 列限制会把一句话切碎，反而难读。表格与长 URL 同理。
     "MD013": false,
 
-    // 行内 HTML：README 里不用，保持默认禁用
-    "MD033": { "allowed_elements": [] },
+    // 行内 HTML：只允许页首居中用的 <div>
+    "MD033": { "allowed_elements": ["div"] },
+
+    // 首行是居中用的 <div>，标题在其中
+    "MD041": false,
 
     // 允许重复的标题名（不同章节下的「用法」「引用」等）
     "MD024": { "siblings_only": true }

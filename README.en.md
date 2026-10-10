@@ -268,7 +268,30 @@ Yes. Write classical source files in `custom/` (see
 replace `hoobnn` in the URLs with your username. Follow the upstream licenses
 below.
 
-## License and legal notes
+## Disclaimer
+
+- This project provides rule data only. It does not provide any proxy service,
+  servers, subscriptions or client software.
+- No warranty. Rules may be outdated, misclassify, or break connections; use
+  at your own risk. The author is not liable for any loss, including but not
+  limited to network outages, blocked services, or data loss.
+- Check your proxy provider's terms. Some providers state that using third-party
+  rule files waives their SLA and technical support. Read your terms first.
+- The rule data contains no circumvention technology. This project is only
+  classification data about which domains belong to which service; it neither
+  asserts nor instructs how any traffic should be handled; policy mapping is
+  entirely up to your configuration.
+- Follow local law. This project is for learning and researching traffic
+  routing only, and must not be used for any purpose that breaks the laws or
+  regulations of your country or region. Your jurisdiction may regulate network
+  traffic forwarding; compliance is your own responsibility, and the author is
+  not responsible for how you use it or the consequences.
+
+If any upstream author considers the way this project mirrors their work
+inappropriate, please open an issue and the corresponding part will be
+removed promptly.
+
+## License
 
 ### This repository
 
@@ -293,21 +316,3 @@ author's statement, not AGPL-3.0.
 
 SukkaW's README explicitly welcomes mirrors and asks that they sync from
 `SukkaLab/ruleset.skk.moe`, which is exactly how this project mirrors it.
-
-### Before you use it
-
-- No warranty. Rules may be outdated, misclassify, or break connections; use
-  at your own risk. The author is not liable for any loss, including but not
-  limited to network outages, blocked services, or data loss.
-- Check your proxy provider's terms. Some providers state that using third-party
-  rule files waives their SLA and technical support. Read your terms first.
-- The rule data contains no circumvention technology. This project is only
-  classification data about which domains belong to which service; it neither
-  asserts nor instructs how any traffic should be handled; policy mapping is
-  entirely up to your configuration.
-- Follow local law. Your jurisdiction may regulate network traffic
-  forwarding; compliance is your own responsibility.
-
-If any upstream author considers the way this project mirrors their work
-inappropriate, please open an issue and the corresponding part will be
-removed promptly.
