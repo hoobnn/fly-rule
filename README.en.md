@@ -1,3 +1,5 @@
+<div align="center">
+
 # fly-rule: Surge & mihomo (Clash Meta) rule sets
 
 Routing rules from MetaCubeX meta-rules-dat, SukkaW's ruleset.skk.moe and Aethersailor's Custom_OpenClash_Rules, collected on one `release` branch that Surge and mihomo can both reference directly.
@@ -9,6 +11,8 @@ Routing rules from MetaCubeX meta-rules-dat, SukkaW's ruleset.skk.moe and Aether
 [![license](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](LICENSE)
 
 [简体中文](README.md) · **English**
+
+</div>
 
 MetaCubeX only publishes mihomo / sing-box formats, which Surge cannot load.
 This project converts and collects them so Surge and mihomo can share the same

@@ -1,3 +1,5 @@
+<div align="center">
+
 # fly-rule：Surge 与 mihomo（Clash Meta）分流规则
 
 把 MetaCubeX meta-rules-dat、SukkaW（ruleset.skk.moe）和 Aethersailor 的分流规则汇总到一个 `release` 分支，Surge 和 mihomo 都能直接引用。
@@ -9,6 +11,8 @@
 [![license](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](LICENSE)
 
 **简体中文** · [English](README.en.md)
+
+</div>
 
 MetaCubeX 只提供 mihomo / sing-box 格式的规则，Surge 无法直接使用。本项目负责格式转换与汇总，让 Surge 和 mihomo 共用同一套分流规则。
 meta-rules-dat 的 geosite / geoip 每个类别都转成了 Surge `RULE-SET`；mihomo 这边提供 `.mrs`、`.yaml`、`.list` 三种格式。
