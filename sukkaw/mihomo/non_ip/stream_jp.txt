@@ -1,0 +1,44 @@
+#########################################
+# Sukka's Ruleset - Stream Services: Japan
+# Last Updated: 2026-08-05T12:33:03.808Z
+# Size: 26
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# - DMM
+# - AbemaTV
+# - niconico
+# - Hulu Japan
+# - encoreTVB JP
+# - NHK Plus
+#
+# $content-hash-v1$:gdw9OBeAsFUgdoLYUtDhmH8XEYSxobz66G7JTR-5r-k$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,dmm.com
+DOMAIN-SUFFIX,hulu.jp
+DOMAIN-SUFFIX,tver.jp
+DOMAIN-SUFFIX,abema.io
+DOMAIN-SUFFIX,abema.tv
+DOMAIN-SUFFIX,ameba.jp
+DOMAIN-SUFFIX,dmc.nico
+DOMAIN-SUFFIX,ameblo.jp
+DOMAIN-SUFFIX,dmm.co.jp
+DOMAIN-SUFFIX,socdm.com
+DOMAIN-SUFFIX,happyon.jp
+DOMAIN-SUFFIX,amebame.com
+DOMAIN-SUFFIX,hayabusa.io
+DOMAIN-SUFFIX,abema-tv.com
+DOMAIN-SUFFIX,hayabusa.dev
+DOMAIN-SUFFIX,nicovideo.jp
+DOMAIN-SUFFIX,winticket.jp
+DOMAIN-SUFFIX,amebaownd.com
+DOMAIN-SUFFIX,hjholdings.jp
+DOMAIN-SUFFIX,hayabusa.media
+DOMAIN-SUFFIX,amebaowndme.com
+DOMAIN-SUFFIX,dmm-extension.com
+DOMAIN-SUFFIX,dokusho-ojikan.jp
+DOMAIN-SUFFIX,location-plus.nhk.jp
+DOMAIN,ds-linear-abematv.akamaized.net
+################## EOF ##################
