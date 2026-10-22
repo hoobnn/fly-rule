@@ -1,2 +1,6 @@
 minimumReleaseAgeExclude:
   - markdownlint-cli2@0.24.0
+
+# 间接依赖的安全修复：上游尚未升级到已修复版本
+overrides:
+  katex: ">=0.18.2"
