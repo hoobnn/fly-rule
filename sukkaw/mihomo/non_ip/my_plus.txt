@@ -1,0 +1,27 @@
+#########################################
+# Sukka's Ruleset - Internal Special
+# Last Updated: 2026-09-10T10:53:59.387Z
+# Size: 16
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# $content-hash-v1$:nz4bK9VUlC1EQ7rf53JVdv7guVn9QCVaKNWnGFAKgWI$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,kxcdn.com
+DOMAIN-SUFFIX,sososo.io
+DOMAIN,hanime1.me
+DOMAIN-SUFFIX,18comic.org
+DOMAIN-SUFFIX,18comic.vip
+DOMAIN-SUFFIX,azurefd.net
+DOMAIN-SUFFIX,akamaihd.net
+DOMAIN-SUFFIX,akamaized.net
+DOMAIN,simpcraft.com
+DOMAIN-SUFFIX,vo.msecnd.net
+DOMAIN-SUFFIX,hentaiverse.org
+DOMAIN,api.wakatime.com
+DOMAIN,hv-monster-submit.skk.moe
+DOMAIN-SUFFIX,akamai-content-networks.com
+DOMAIN,a1ewuiz2p7wdvw-ats.iot.us-west-2.amazonaws.com
+################## EOF ##################
