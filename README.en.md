@@ -14,12 +14,17 @@ Routing rules from MetaCubeX meta-rules-dat, SukkaW's ruleset.skk.moe and Aether
 
 </div>
 
-MetaCubeX only publishes mihomo / sing-box formats, which Surge cannot load.
-This project converts and collects them so Surge and mihomo can share the same
-routing rules (分流规则). Every meta-rules-dat geosite / geoip category is
-available as a Surge `RULE-SET`; on the mihomo side you get `.mrs`, `.yaml` and
-`.list`. Upstreams sync once a day, and nothing is published until it passes
-syntax, rule-count and real-load checks.
+fly-rule is a free, open-source (AGPL-3.0) set of Surge and mihomo (Clash Meta /
+OpenClash core) routing rules. It converts and collects rules from MetaCubeX
+meta-rules-dat, SukkaW's ruleset.skk.moe and Aethersailor's Custom_OpenClash_Rules
+on one `release` branch, so Surge `RULE-SET` / `DOMAIN-SET` and mihomo
+`rule-providers` can reference them by raw URL.
+
+MetaCubeX only publishes mihomo / sing-box formats, which Surge cannot load, so
+every meta-rules-dat geosite / geoip category is also available as a Surge
+`RULE-SET`; on the mihomo side you get `.mrs`, `.yaml` and `.list`. Upstreams
+sync once a day, and nothing is published until it passes syntax, rule-count and
+real-load checks.
 
 ## Who it's for
 
@@ -267,6 +272,20 @@ Yes. Write classical source files in `custom/` (see
 [`custom/README.md`](custom/README.md)), enable Actions in your fork, and
 replace `hoobnn` in the URLs with your username. Follow the upstream licenses
 below.
+
+### How is this different from using upstream directly?
+
+If you only use mihomo and only need MetaCubeX rules, use
+[MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)
+directly; you don't need this project. Use this one when you need MetaCubeX
+rules in Surge format, or want Surge and mihomo to share one rule set with one
+URL pattern and pre-publish checks.
+
+### Does it support sing-box or OpenClash?
+
+No sing-box format; this project only handles Surge and mihomo. OpenClash uses
+the mihomo (Meta) core, so reference rules with the mihomo `rule-providers`
+syntax above; for Aethersailor's rules use `aethersailor/rule-mihomo/`.
 
 ## Disclaimer
 

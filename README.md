@@ -2,7 +2,7 @@
 
 # fly-rule
 
-把 MetaCubeX meta-rules-dat、SukkaW（ruleset.skk.moe）和 Aethersailor 的分流规则汇总到一个 `release` 分支，Surge 和 mihomo 都能直接引用。
+fly-rule 是免费开源（AGPL-3.0）的 Surge 与 mihomo（Clash Meta / OpenClash 内核）分流规则集：把 MetaCubeX meta-rules-dat、SukkaW（ruleset.skk.moe）和 Aethersailor 的分流规则汇总到一个 `release` 分支，Surge 的 `RULE-SET` / `DOMAIN-SET` 和 mihomo 的 `rule-providers` 都能直接引用 URL，每日自动同步。
 
 [![build](https://img.shields.io/github/actions/workflow/status/hoobnn/fly-rule/build.yml?branch=main&style=flat-square&label=build)](https://github.com/hoobnn/fly-rule/actions/workflows/build.yml)
 [![release](https://img.shields.io/github/last-commit/hoobnn/fly-rule/release?style=flat-square&label=release)](https://github.com/hoobnn/fly-rule/tree/release)
@@ -225,6 +225,15 @@ Aethersailor 的原样镜像 `rule/` 里有两端都加载不了的条目，只�
 ### 可以 fork 之后加自己的规则吗？
 
 可以。在 `custom/` 写 classical 源文件（见 [`custom/README.md`](custom/README.md)），在 fork 里打开 Actions，再把引用 URL 里的 `hoobnn` 换成你的用户名。请遵守下面各上游的协议。
+
+### 和直接用上游有什么区别？该选哪个？
+
+只用 mihomo 且只要 MetaCubeX 的规则，直接用 [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) 即可，不需要这个项目。
+需要 Surge 格式的 MetaCubeX 规则，或者想让 Surge 和 mihomo 用同一套规则、同一种 URL 写法、并有发布前检查时，用本项目。
+
+### 支持 sing-box、OpenClash 吗？
+
+不提供 sing-box 格式，本项目只处理 Surge 和 mihomo 两端。OpenClash 使用 mihomo（Meta）内核，可按上文 mihomo 的 `rule-providers` 写法引用；Aethersailor 的规则请用 `aethersailor/rule-mihomo/`。
 
 ## 免责声明
 
