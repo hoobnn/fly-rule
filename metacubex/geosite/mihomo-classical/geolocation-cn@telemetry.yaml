@@ -1,0 +1,4 @@
+payload:
+    - DOMAIN-SUFFIX,cloudflareinsights-cn.com
+    - DOMAIN-SUFFIX,shuqistat.com
+    - DOMAIN-SUFFIX,meitustat.com

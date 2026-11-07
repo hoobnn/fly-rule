@@ -1,0 +1,12 @@
+#########################################
+# Sukka's Ruleset - Stream Services IPs: Bilibili International
+# Last Updated: 2025-01-17T12:44:34.353Z
+# Size: 1
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# - Bilibili International
+#########################################
+DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe
+################## EOF ##################

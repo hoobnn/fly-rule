@@ -1,0 +1,45 @@
+#########################################
+# Sukka's Ruleset - Reject And Drop
+# Last Updated: 2026-11-04T07:38:37.359Z
+# Size: 32
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file This file contains rules for domain should be used with REJECT-DROP policy.
+#
+# $content-hash-v1$:8-tP-tZx1gxM9UU-KU5ADxzy4lAFyqkCWUk_yP78uvY$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,null
+DOMAIN-SUFFIX,jpush.cn
+DOMAIN-SUFFIX,jpush.io
+DOMAIN-SUFFIX,getui.com
+DOMAIN-SUFFIX,getui.net
+DOMAIN-SUFFIX,undefined
+DOMAIN-SUFFIX,gepush.com
+DOMAIN-SUFFIX,slackb.com
+DOMAIN-SUFFIX,trace.qq.com
+DOMAIN-SUFFIX,amplitude.com
+DOMAIN-SUFFIX,beacon.qq.com
+DOMAIN,api.segment.io
+DOMAIN-SUFFIX,geo2.adobe.com
+DOMAIN,data.bilibili.com
+DOMAIN-SUFFIX,easytomessage.com
+DOMAIN-SUFFIX,femetrics.qagr.io
+DOMAIN,stats.grafana.org
+DOMAIN-SUFFIX,tracking.miui.com
+DOMAIN-SUFFIX,data.grammarly.com
+DOMAIN-SUFFIX,data.microsoft.com
+DOMAIN-SUFFIX,gnar.grammarly.com
+DOMAIN,stat.youpin.mi.com
+DOMAIN,dataflow.biliapi.com
+DOMAIN,nom.telemetrydeck.com
+DOMAIN-SUFFIX,telemetry.mozilla.org
+DOMAIN-SUFFIX,femetrics.grammarly.io
+DOMAIN-SUFFIX,tracking.intl.miui.com
+DOMAIN-SUFFIX,f-log-assistant.grammarly.io
+DOMAIN-SUFFIX,f-log-extension.grammarly.io
+DOMAIN-SUFFIX,in.applicationinsights.azure.com
+DOMAIN-WILDCARD,f-log*.grammarly.io
+################## EOF ##################
