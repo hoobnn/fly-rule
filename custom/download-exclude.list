@@ -1,0 +1,29 @@
+# 下载组排除集合：含共享存储、CDN 与文件托管，不是代理或直连名单。
+# 不独立指定策略；排除后继续走客户端后续规则。
+# 共享对象存储可能承载登录后的附件、签名下载与业务数据，不因为文件体积大就切换出口。
+DOMAIN-SUFFIX,amazonaws.com
+DOMAIN-SUFFIX,amazonaws.cn
+DOMAIN-SUFFIX,amazonaws.com.cn
+DOMAIN-SUFFIX,cloudflarestorage.com
+DOMAIN-SUFFIX,r2.dev
+DOMAIN-SUFFIX,blob.core.windows.net
+DOMAIN-SUFFIX,file.core.windows.net
+DOMAIN-SUFFIX,digitaloceanspaces.com
+DOMAIN-SUFFIX,backblazeb2.com
+DOMAIN-SUFFIX,wasabisys.com
+DOMAIN-SUFFIX,myqcloud.com
+DOMAIN-SUFFIX,aliyuncs.com
+DOMAIN-SUFFIX,storage.googleapis.com
+# 共享 CDN 也可能承载多家业务；保守地交回原有分流。
+DOMAIN-SUFFIX,b-cdn.net
+DOMAIN-SUFFIX,akamaized.net
+DOMAIN-SUFFIX,akamaihd.net
+# 通用文件托管平台不保证只提供免登录公开下载，保留原有分流。
+DOMAIN-SUFFIX,mega.io
+DOMAIN-SUFFIX,mega.nz
+DOMAIN-SUFFIX,mega.co.nz
+DOMAIN-SUFFIX,mediafire.com
+DOMAIN-SUFFIX,file.io
+DOMAIN-SUFFIX,filebin.net
+DOMAIN-SUFFIX,1fichier.com
+DOMAIN-SUFFIX,1fichier.info

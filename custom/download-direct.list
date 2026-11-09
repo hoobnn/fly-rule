@@ -1,0 +1,7 @@
+# 下载集之前的明确国内下载 / 加速镜像例外，不提前整个国内大表或公共 CDN 后缀。
+# 小米系统更新端点，参考 SukkaW download 与 domestic 的交集。
+DOMAIN-SUFFIX,d.miui.com
+# 国内 GitHub 与容器加速端点，参考 SukkaW download 与 Aethersailor Custom_Direct 的交集。
+DOMAIN-SUFFIX,ghp.ci
+DOMAIN-SUFFIX,ghfast.top
+DOMAIN,r2.daocloud.vip
