@@ -1,0 +1,22 @@
+# 微软开发服务。须排在 geosite microsoft 之前，否则会被 🪟 微软 收走直连。
+# 只收开发工具自己的域名，不含 microsoft.com / azure.com。
+
+# Visual Studio 与扩展市场（marketplace.visualstudio.com、gallerycdn.vsassets.io）
+DOMAIN-SUFFIX,visualstudio.com
+DOMAIN-SUFFIX,visualstudio.net
+DOMAIN-SUFFIX,visualstudio.eu
+DOMAIN-SUFFIX,visualstudio.co
+DOMAIN-SUFFIX,visualstudio.co.uk
+DOMAIN-SUFFIX,visualstudio-staging.com
+DOMAIN-SUFFIX,vsassets.io
+
+# VS Code
+DOMAIN-SUFFIX,vscode.dev
+DOMAIN-SUFFIX,vscode-cdn.net
+DOMAIN-SUFFIX,vscode-unpkg.net
+DOMAIN-SUFFIX,vscode-webview.net
+
+# NuGet / PowerShell Gallery
+DOMAIN-SUFFIX,nuget.org
+DOMAIN-SUFFIX,nugettest.org
+DOMAIN-SUFFIX,powershellgallery.com
