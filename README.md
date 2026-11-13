@@ -143,6 +143,10 @@ custom/{surge,mihomo}/
 
 `surge/` 给 Surge 用，`mihomo/` 给 mihomo 用（geosite 用 `behavior: domain`，geoip 用 `ipcidr`，`mihomo-classical/` 用 `classical`）。
 
+Aethersailor 的 `rule-surge/Custom_Direct_Domain.list` 只含域名规则，
+`Custom_Direct_Classical_IP.list` 含 IP 与端口规则，供配置放在所有域名规则之后。
+原有 `Custom_Direct.list` 仍保留完整内容，兼容旧配置。
+
 规则顺序：所有域名规则都要排在 IP 规则之前。否则匹配到 IP 规则时会触发 DNS 解析，从而失去对 DNS 污染的防护。
 
 支持直接引用属性变体，共 342 个，比如 `youtube@ads.conf`、`adobe@cn.conf`、`airchina@!cn.conf`。`@` 和 `!` 在 raw URL 里不用转义。

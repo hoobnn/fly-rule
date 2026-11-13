@@ -152,6 +152,11 @@ custom/{surge,mihomo}/
 `surge/` is for Surge and `mihomo/` for mihomo (geosite uses `behavior: domain`,
 geoip uses `ipcidr`, `mihomo-classical/` uses `classical`).
 
+For Aethersailor, `rule-surge/Custom_Direct_Domain.list` contains domain rules;
+`Custom_Direct_Classical_IP.list` contains IP and port rules for placement after
+all domain rules. The complete `Custom_Direct.list` remains available for older
+configurations.
+
 On ordering: put every domain rule before every IP rule. Once an IP rule is
 evaluated, a DNS lookup happens, and you lose the protection against DNS
 poisoning.

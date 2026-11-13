@@ -258,6 +258,16 @@ def check_surge_out(src_dir: Path, out_dir: Path, exclude: list | None) -> list[
                 f"应 {len(want)} 行，实 {len(lines)} 行",
             )
             errors.append(f"{label}/{rel} 与上游转换结果不符：{diff}")
+        if rel.as_posix() == "Custom_Direct.list":
+            for suffix, domain in (("Domain", True), ("Classical_IP", False)):
+                split = f.with_name(f"{f.stem}_{suffix}.list")
+                expected = [
+                    line for line in want if line.startswith("DOMAIN") == domain
+                ]
+                if not split.is_file():
+                    errors.append(f"{label}/{split.name} 缺失")
+                elif rule_lines(split) != expected:
+                    errors.append(f"{label}/{split.name} 与上游分区不符")
     return errors
 
 

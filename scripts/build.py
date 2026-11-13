@@ -328,6 +328,17 @@ def surge_tree(
         dest = out_dir / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(head + "\n".join(out) + "\n", encoding="utf-8")
+        # 与 mihomo 的域名 / classical IP 分区对齐；端口规则也留到后段。
+        # 保留完整 .list，兼容仍在引用旧产物的客户端。
+        if rel.as_posix() == "Custom_Direct.list":
+            rules = [line for line in out if line and not line.startswith("#")]
+            for suffix, domain in (("Domain", True), ("Classical_IP", False)):
+                selected = [
+                    line for line in rules if line.startswith("DOMAIN") == domain
+                ]
+                split = dest.with_name(f"{dest.stem}_{suffix}.list")
+                split.write_text(head + "\n".join(selected) + "\n", encoding="utf-8")
+                stats["files"] += 1
         stats["files"] += 1
         stats["rewritten"] += rewritten
         stats["dropped"] += [f"{rel.as_posix()}: {d}" for d in dropped]
