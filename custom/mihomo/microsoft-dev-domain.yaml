@@ -1,0 +1,19 @@
+# microsoft-dev-domain
+# 由 fly-rule 自 custom/microsoft-dev.list 生成，请勿手工编辑
+# 规则数: 14
+# mihomo 引用时须写 behavior: domain，写错会整表静默丢弃
+payload:
+  - '+.visualstudio.com'
+  - '+.visualstudio.net'
+  - '+.visualstudio.eu'
+  - '+.visualstudio.co'
+  - '+.visualstudio.co.uk'
+  - '+.visualstudio-staging.com'
+  - '+.vsassets.io'
+  - '+.vscode.dev'
+  - '+.vscode-cdn.net'
+  - '+.vscode-unpkg.net'
+  - '+.vscode-webview.net'
+  - '+.nuget.org'
+  - '+.nugettest.org'
+  - '+.powershellgallery.com'

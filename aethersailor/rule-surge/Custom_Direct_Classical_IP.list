@@ -1,0 +1,15 @@
+# 由 fly-rule 自 aethersailor@897c5ec 转换（Surge 专用），请勿手工编辑
+# 上游: Custom_Direct.list
+# 改写为 Surge 写法 1 行（DST-PORT -> DEST-PORT 等）
+SRC-PORT,41641
+IP-CIDR,198.41.192.0/24,no-resolve
+IP-CIDR,198.41.200.0/24,no-resolve
+DEST-PORT,7844
+IP-CIDR,5.5.5.5/32,no-resolve
+IP-CIDR,218.78.7.16/32,no-resolve
+IP-CIDR,98.126.27.164/32,no-resolve
+IP-CIDR,108.174.48.100/32,no-resolve
+IP-CIDR,47.246.99.0/24,no-resolve
+IP-CIDR,47.246.103.0/24,no-resolve
+IP-CIDR,47.246.177.0/24,no-resolve
+IP-CIDR,47.246.180.0/24,no-resolve

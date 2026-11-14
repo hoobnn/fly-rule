@@ -1,0 +1,4 @@
+#########################################
+# Sukka's Ruleset - Deprecated
+# This file has been merged with non_ip/global
+################## EOF ##################

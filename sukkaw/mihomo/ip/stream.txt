@@ -1,0 +1,92 @@
+#########################################
+# Sukka's Ruleset - Stream Services IPs: All
+# Last Updated: 2026-08-05T12:33:03.807Z
+# Size: 20
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# - 4gtv
+# - AbemaTV
+# - Amazon Prime Video
+# - All4
+# - Apple TV
+# - Apple Music TV
+# - Bahamut
+# - BBC
+# - Bilibili International
+# - Crackle
+# - DAZN
+# - Deezer
+# - Disney+
+# - Discovery+
+# - DMM
+# - encoreTVB
+# - encoreTVB JP
+# - Friday TW
+# - Fox Now
+# - Fox+
+# - HBO Go / HBO Now / HBO Max / Max
+# - HBO Asia
+# - Himalaya FM
+# - Hulu
+# - HWTV
+# - iQiYi Global
+# - ITV
+# - JOOX
+# - KKBOX
+# - KKTV
+# - Line TV
+# - MangaFox
+# - My5
+# - myTV Super
+# - Netflix
+# - Naver TV
+# - niconico
+# - NHK Plus
+# - Now E
+# - Overcast FM
+# - Paramount+
+# - PBS
+# - Peacock
+# - Pandora
+# - Pornhub
+# - Pluto TV
+# - SoundCloud
+# - SHOWTIME
+# - Spotify
+# - TaiwanGood
+# - TIDAL
+# - TikTok
+# - TVB Anywhere
+# - Twitch
+# - Tubi TV
+# - ViuTV
+# - Vudu
+# - WeTV
+# - YouTube
+# - YouTube Music
+#
+# $content-hash-v1$:5KP69tA3ZiWzJLoVRbQzN3Nl5Aq80EEPLEmrcuKwTEk$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+IP-CIDR,23.246.18.0/23,no-resolve
+IP-CIDR,35.186.224.47/32,no-resolve
+IP-CIDR,37.77.184.0/21,no-resolve
+IP-CIDR,45.57.0.0/17,no-resolve
+IP-CIDR,64.120.128.0/17,no-resolve
+IP-CIDR,66.197.128.0/17,no-resolve
+IP-CIDR,69.53.224.0/19,no-resolve
+IP-CIDR,108.175.32.0/20,no-resolve
+IP-CIDR,150.109.28.51/32,no-resolve
+IP-CIDR,185.2.220.0/22,no-resolve
+IP-CIDR,185.9.188.0/22,no-resolve
+IP-CIDR,192.173.64.0/18,no-resolve
+IP-CIDR,198.38.96.0/19,no-resolve
+IP-CIDR,198.45.48.0/20,no-resolve
+IP-CIDR,208.75.76.0/22,no-resolve
+IP-CIDR6,2607:fb10::/32,no-resolve
+IP-CIDR6,2620:10c:7000::/44,no-resolve
+IP-CIDR6,2a00:86c0::/32,no-resolve
+IP-CIDR6,2a03:5640::/32,no-resolve
+################## EOF ##################
