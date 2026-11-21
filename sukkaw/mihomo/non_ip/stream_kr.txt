@@ -1,0 +1,16 @@
+#########################################
+# Sukka's Ruleset - Stream Services: Korean
+# Last Updated: 2026-08-05T12:33:03.808Z
+# Size: 3
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# - Naver TV
+#
+# $content-hash-v1$:uAZPY8csrOzDU0CTrG066HwGSnajZG_pWBIqWSbNxqc$
+#########################################
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+DOMAIN-SUFFIX,tv.naver.com
+DOMAIN-SUFFIX,smartmediarep.com
+################## EOF ##################

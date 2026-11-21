@@ -1,0 +1,15 @@
+# apple-push
+# 由 fly-rule 自 custom/apple-push.list 生成，请勿手工编辑
+# 规则数: 10
+# mihomo 引用时须写 behavior: classical，写错会整表静默丢弃
+payload:
+  - 'DOMAIN-SUFFIX,push.apple.com'
+  - 'IP-CIDR,17.249.0.0/16'
+  - 'IP-CIDR,17.252.0.0/16'
+  - 'IP-CIDR,17.57.144.0/22'
+  - 'IP-CIDR,17.188.128.0/18'
+  - 'IP-CIDR,17.188.20.0/23'
+  - 'IP-CIDR6,2620:149:a44::/48'
+  - 'IP-CIDR6,2403:300:a42::/48'
+  - 'IP-CIDR6,2403:300:a51::/48'
+  - 'IP-CIDR6,2a01:b740:a42::/48'

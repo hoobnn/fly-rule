@@ -1,0 +1,8 @@
+# example-domain
+# 由 fly-rule 自 custom/example.list 生成，请勿手工编辑
+# 规则数: 2
+# mihomo 引用时须写 behavior: domain，写错会整表静默丢弃
+# 已排除 1 条 domain behavior 无法表达的规则（如 DOMAIN-KEYWORD,tracker），它们仅在 Surge 与 classical 产物中生效
+payload:
+  - 'foo.example.org'
+  - '+.example.com'

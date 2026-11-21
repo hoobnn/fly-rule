@@ -1,0 +1,29 @@
+# download-exclude-domain
+# 由 fly-rule 自 custom/download-exclude.list 生成，请勿手工编辑
+# 规则数: 24
+# mihomo 引用时须写 behavior: domain，写错会整表静默丢弃
+payload:
+  - '+.amazonaws.com'
+  - '+.amazonaws.cn'
+  - '+.amazonaws.com.cn'
+  - '+.cloudflarestorage.com'
+  - '+.r2.dev'
+  - '+.blob.core.windows.net'
+  - '+.file.core.windows.net'
+  - '+.digitaloceanspaces.com'
+  - '+.backblazeb2.com'
+  - '+.wasabisys.com'
+  - '+.myqcloud.com'
+  - '+.aliyuncs.com'
+  - '+.storage.googleapis.com'
+  - '+.b-cdn.net'
+  - '+.akamaized.net'
+  - '+.akamaihd.net'
+  - '+.mega.io'
+  - '+.mega.nz'
+  - '+.mega.co.nz'
+  - '+.mediafire.com'
+  - '+.file.io'
+  - '+.filebin.net'
+  - '+.1fichier.com'
+  - '+.1fichier.info'
